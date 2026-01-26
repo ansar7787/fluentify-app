@@ -34,7 +34,7 @@ export class FirebaseService implements OnModuleInit {
 
         // Fallback: Verify via Firebase Identity Toolkit API
         // Using the Android API Key found in client config
-        const apiKey = 'AIzaSyDBT-hMuEbKjQnaThOYxHatJI7nwxi7XpQ';
+        const apiKey = this.configService.get<string>('FIREBASE_API_KEY');
 
         try {
             const response = await axios.post(
