@@ -1,0 +1,25 @@
+# OS metadata
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDEs
+.idea
+.vscode
+*.iml
+*.swp
+
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Common
+.env
+.env.local
+.env.*.local
+*.log
+
+# Leftover / Build artifacts
+build/
