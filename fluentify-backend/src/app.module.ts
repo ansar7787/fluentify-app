@@ -31,8 +31,11 @@ import { ChatModule } from './modules/chat/chat.module';
         password: configService.get('DB_PASSWORD', ''),
         database: configService.get('DB_NAME', 'speakpay_db'),
         entities: ['dist/**/*.entity{.ts,.js}'],
-        synchronize: configService.get('NODE_ENV') === 'development',
-        logging: configService.get('NODE_ENV') === 'development',
+        synchronize: true, // Enable for now to ensure tables exist in prod
+        ssl: configService.get('NODE_ENV') === 'production',
+        extra: configService.get('NODE_ENV') === 'production'
+          ? { ssl: { rejectUnauthorized: false } }
+          : undefined,
       }),
     }),
     ScheduleModule.forRoot(),
