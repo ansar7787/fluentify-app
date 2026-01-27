@@ -25,6 +25,15 @@ export class UserController {
         return this.userService.update(req.user.id, updateData);
     }
 
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @Get('me/rank')
+    @ApiOperation({ summary: 'Get current user rank' })
+    async getUserRank(@Request() req) {
+        const rank = await this.userService.getUserRank(req.user.id);
+        return { rank };
+    }
+
     @Get('leaderboard')
     @ApiOperation({ summary: 'Get global leaderboard' })
     async getLeaderboard(@Query('limit') limit?: number) {

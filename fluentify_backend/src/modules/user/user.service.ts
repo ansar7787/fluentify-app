@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, MoreThan } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserMission } from '../mission/entities/user-mission.entity';
 
@@ -12,6 +12,19 @@ export class UserService {
         @InjectRepository(UserMission)
         private userMissionRepository: Repository<UserMission>,
     ) { }
+
+    // ... existing methods ...
+
+    async getUserRank(userId: string): Promise<number> {
+        const user = await this.userRepository.findOne({ where: { id: userId } });
+        if (!user) return 0;
+
+        const higherRanked = await this.userRepository.count({
+            where: { coins: MoreThan(user.coins) }
+        });
+        return higherRanked + 1;
+    }
+
 
     async findByEmail(email: string): Promise<User | null> {
         return this.userRepository.findOne({ where: { email } });
