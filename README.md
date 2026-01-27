@@ -10,56 +10,58 @@
 
 ---
 
-## 📸 Project Showcase
+## 🏗 Detailed Project Structure
 
-### 🧩 Sentence Master Interface
-Practice grammar and sentence building with an intuitive drag-and-drop interface.
+### 📱 Frontend (Flutter Clean Architecture)
+The mobile application is divided into feature-based modules, each following a strict three-layer architectural pattern.
 
-| Level Selection | Challenge Interface | Dark Mode Challenge |
-| :---: | :---: | :---: |
-| ![Levels](assets/screenshots/level_selection.jpg) | ![Challenge](assets/screenshots/challenge_input.jpg) | ![Dark Mode](assets/screenshots/challenge_dark.jpg) |
-
-### 👥 Peer Interaction & Social
-Connect with fellow learners and track your progress on a comprehensive dashboard.
-
-| Finding a Peer | Profile Dashboard | Settings & Dark Mode |
-| :---: | :---: | :---: |
-| ![Peer](assets/screenshots/finding_peer.jpg) | ![Profile](assets/screenshots/profile_dashboard.jpg) | ![Settings](assets/screenshots/profile_settings.jpg) |
-
----
-
-## 🏗 Architecture & State Management
-
-The project strictly follows **Clean Architecture** to decouple business logic from the UI and external data sources.
-
-### 📱 Frontend (Flutter)
-- **State Management**: [BLoC (Business Logic Component)](https://bloclibrary.dev/)
-- **Architecture**: Domain-Driven Design (Clean Architecture)
-  - **Data Layer**: Repositories implementations, Data sources (Local/Remote), and Models (DTOs).
-  - **Domain Layer**: Entities, Repositories interfaces, and Use Cases.
-  - **Presentation Layer**: BLoCs, Pages, and Widgets.
-
-### 📂 Folder Structure Example (`lib/features/auth`)
 ```bash
-auth/
-├── data/               # Implementation of repositories & data sources
-│   ├── datasources/
-│   ├── models/
-│   └── repositories/
-├── domain/             # Business logic & contracts
-│   ├── entities/
-│   ├── repositories/
-│   └── usecases/
-└── presentation/       # UI & State management
-    ├── bloc/
-    ├── pages/
-    └── widgets/
+fluentify_frontend/
+├── lib/
+│   ├── core/               # Global utilities, services, and common widgets
+│   │   ├── constants/      # App-wide constants (URLs, keys)
+│   │   ├── di/             # Dependency Injection (Service Locator)
+│   │   ├── error/          # Failure and Exception classes
+│   │   ├── network/        # Network info & Dio client configuration
+│   │   ├── services/       # Global services (Storage, Audio, etc.)
+│   │   └── theme/          # App styles and theme data
+│   ├── features/           # Independent business modules
+│   │   └── auth/           # Example: Authentication Feature
+│   │       ├── data/       # Data Implementation
+│   │       │   ├── datasources/  # API & Local storage logic
+│   │       │   ├── models/       # Data DTOs & JSON serialization
+│   │       │   └── repositories/ # Implementation of domain repos
+│   │       ├── domain/     # Business Logic Contract
+│   │       │   ├── entities/     # Simple data blueprints
+│   │       │   ├── repositories/ # Abstract repository contracts
+│   │       │   └── usecases/     # Specific business actions
+│   │       └── presentation/ # UI & State Management
+│   │           ├── bloc/         # BLoC logic for the feature
+│   │           ├── pages/        # Full-screen widgets
+│   │           └── widgets/      # Small reusable components
+│   └── main.dart           # Application entry point
 ```
 
-### 🛠 Backend (NestJS)
-- **Framework**: NestJS (Scalable Node.js)
-- **Database**: PostgreSQL with TypeORM
-- **Pattern**: Controller-Service-Repository pattern for modularity.
+### 🛠 Backend (NestJS Modular Architecture)
+The server uses a modular architecture where each domain is encapsulated in its own module.
+
+```bash
+fluentify_backend/
+├── src/
+│   ├── modules/            # Domain modules
+│   │   ├── auth/           # JWT, Google, and Email Auth logic
+│   │   ├── user/           # Profile and user management
+│   │   ├── mission/        # Learning mission tasks
+│   │   ├── peer/           # Real-time peer matching logic
+│   │   ├── chat/           # Messaging services
+│   │   └── payment/        # Razorpay & Subscription integration
+│   ├── database/           # TypeORM migrations and configuration
+│   ├── common/             # Global decorators, filters, and guards
+│   ├── shared/             # Shared services (Firebase, AWS, etc.)
+│   ├── app.module.ts       # Root module
+│   └── main.ts             # Server entry point
+└── .env                    # Environment variables (Secrets)
+```
 
 ---
 
@@ -81,26 +83,26 @@ Fluentify provides multiple secure authentication methods:
 
 ---
 
+## 📸 Project Showcase
+
+| Sentence Master | Profile Dashboard | Peer Matching |
+| :---: | :---: | :---: |
+| ![Levels](assets/screenshots/level_selection.jpg) | ![Profile](assets/screenshots/profile_dashboard.jpg) | ![Peer](assets/screenshots/finding_peer.jpg) |
+
+---
+
 ## 🏁 Execution Guide
 
-### 1. Backend (Local)
+### 1. Backend Setup
 ```bash
-cd fluentify_backend
-npm install
-npm run start:dev
+cd fluentify_backend && npm install && npm run start:dev
 ```
 
-### 2. Tunneling (For Mobile Testing)
+### 2. Mobile App Setup
 ```bash
-npx tunnelmole 3000
+cd fluentify_frontend && flutter pub get && flutter run
 ```
-
-### 3. Mobile App
-```bash
-cd fluentify_frontend
-flutter pub get
-flutter run
-```
+*Note: Ensure your `apiBaseUrl` is updated with a valid tunnel for physical device testing.*
 
 ---
 
