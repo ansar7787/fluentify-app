@@ -5,7 +5,7 @@ class AppConstants {
   static String get apiBaseUrl {
     if (Platform.isAndroid) {
       // Using Tunnelmole for password-free public access
-      return 'https://kugbfb-ip-202-122-23-201.tunnelmole.net';
+      return 'https://npulkk-ip-202-122-23-236.tunnelmole.net';
     }
     return 'http://localhost:3000';
   }
