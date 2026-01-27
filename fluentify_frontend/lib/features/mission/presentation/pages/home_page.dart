@@ -11,6 +11,8 @@ import '../../../user/presentation/bloc/user_event.dart';
 import '../../../user/presentation/bloc/user_state.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../game/presentation/pages/game_levels_page.dart';
+import '../../../game/presentation/pages/grammar_levels_page.dart';
+import '../../../game/presentation/pages/speaking_levels_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -106,7 +108,52 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(height: 32),
                 _buildSectionHeader('English Games', () {}),
                 const SizedBox(height: 16),
-                _buildGameCard(context),
+                SizedBox(
+                  height: 180,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      _buildGameCard(
+                        context,
+                        'Sentence Scramble',
+                        'Master syntax by reordering words!',
+                        [const Color(0xFFF59E0B), const Color(0xFFD97706)],
+                        Icons.extension,
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const GameLevelsPage()),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      _buildGameCard(
+                        context,
+                        'Grammar Quest',
+                        'Choose the correct verb forms & rules!',
+                        [const Color(0xFF8B5CF6), const Color(0xFF6D28D9)],
+                        Icons.g_translate,
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const GrammarLevelsPage()),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      _buildGameCard(
+                        context,
+                        'Fluency Flow',
+                        'Speak and get real-time AI feedback!',
+                        [const Color(0xFF10B981), const Color(0xFF047857)],
+                        Icons.record_voice_over,
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const SpeakingLevelsPage()),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 32),
                 _buildSectionHeader('Daily Missions', () {}),
                 const SizedBox(height: 16),
@@ -464,30 +511,30 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildGameCard(BuildContext context) {
+  Widget _buildGameCard(
+    BuildContext context,
+    String title,
+    String subtitle,
+    List<Color> colors,
+    IconData icon,
+    VoidCallback onTap,
+  ) {
     return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const GameLevelsPage(),
-          ),
-        );
-      },
+      onTap: onTap,
       borderRadius: BorderRadius.circular(24),
       child: Container(
-        width: double.infinity,
+        width: 280,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+          gradient: LinearGradient(
+            colors: colors,
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFF59E0B).withValues(alpha: 0.3),
+              color: colors[0].withValues(alpha: 0.3),
               blurRadius: 15,
               offset: const Offset(0, 8),
             ),
@@ -507,7 +554,7 @@ class _HomePageState extends State<HomePage> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Text(
-                      'NEW GAME',
+                      'FEATURED',
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 10,
@@ -515,29 +562,31 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Sentence Scramble',
-                    style: TextStyle(
+                  Text(
+                    title,
+                    style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'Master syntax by reordering words!',
-                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
+            const SizedBox(width: 12),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: const BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.play_arrow_rounded,
-                  color: Color(0xFFD97706), size: 30),
+              child: Icon(icon, color: colors[1], size: 24),
             ),
           ],
         ),
