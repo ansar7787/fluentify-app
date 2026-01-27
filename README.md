@@ -4,8 +4,9 @@
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter)
 ![NestJS](https://img.shields.io/badge/Backend-NestJS-E0234E?logo=nestjs)
+![Clean Architecture](https://img.shields.io/badge/Architecture-Clean-blueviolet)
 
-**Fluentify** is an AI-powered language learning platform designed to make fluency accessible, interactive, and engaging. It features a gamified learning experience with real-time peer matching and AI-driven feedback.
+**Fluentify** is a professional-grade language learning platform. It is built using **Clean Architecture** principles and **BLoC State Management** to ensure high scalability, maintainability, and testability.
 
 ---
 
@@ -25,67 +26,80 @@ Connect with fellow learners and track your progress on a comprehensive dashboar
 | :---: | :---: | :---: |
 | ![Peer](assets/screenshots/finding_peer.jpg) | ![Profile](assets/screenshots/profile_dashboard.jpg) | ![Settings](assets/screenshots/profile_settings.jpg) |
 
-### 💎 Gamification & Premium
-Earn rewards and unlock advanced features with our premium membership.
+---
 
-| Level Complete | Free Membership | Premium Plans |
-| :---: | :---: | :---: |
-| ![Success](assets/screenshots/level_complete.jpg) | ![Free](assets/screenshots/subscription_free.jpg) | ![Premium](assets/screenshots/subscription_premium.jpg) |
+## 🏗 Architecture & State Management
+
+The project strictly follows **Clean Architecture** to decouple business logic from the UI and external data sources.
+
+### 📱 Frontend (Flutter)
+- **State Management**: [BLoC (Business Logic Component)](https://bloclibrary.dev/)
+- **Architecture**: Domain-Driven Design (Clean Architecture)
+  - **Data Layer**: Repositories implementations, Data sources (Local/Remote), and Models (DTOs).
+  - **Domain Layer**: Entities, Repositories interfaces, and Use Cases.
+  - **Presentation Layer**: BLoCs, Pages, and Widgets.
+
+### 📂 Folder Structure Example (`lib/features/auth`)
+```bash
+auth/
+├── data/               # Implementation of repositories & data sources
+│   ├── datasources/
+│   ├── models/
+│   └── repositories/
+├── domain/             # Business logic & contracts
+│   ├── entities/
+│   ├── repositories/
+│   └── usecases/
+└── presentation/       # UI & State management
+    ├── bloc/
+    ├── pages/
+    └── widgets/
+```
+
+### 🛠 Backend (NestJS)
+- **Framework**: NestJS (Scalable Node.js)
+- **Database**: PostgreSQL with TypeORM
+- **Pattern**: Controller-Service-Repository pattern for modularity.
+
+---
+
+## 🔐 Authentication & Security
+
+Fluentify provides multiple secure authentication methods:
+- **Email/Password**: Traditional authentication with data securely stored in **PostgreSQL**.
+- **Google Sign-In**: Seamless OAuth2 integration using Firebase Authentication.
+- **JWT Security**: All backend requests are protected by JSON Web Tokens.
 
 ---
 
 ## 🚀 Core Features
 
 - **Adaptive Learning**: 100+ levels that scale with your progress.
-- **Smart Peer Matching**: Instantly connect with users at your current level for real-time practice.
-- **AI Feedback**: Get detailed pronunciation and grammar analysis.
-- **Vibrant UI**: Beautifully crafted dark mode and responsive layouts for all devices.
-- **Progress Tracking**: Daily streaks, coin rewards, and level-up milestones.
-
----
-
-## 🛠 Technology Stack
-
-- **Frontend**: Flutter (State Management: BLoC/Provider)
-- **Backend API**: NestJS (Node.js)
-- **Database**: PostgreSQL with TypeORM
-- **Authentication**: Firebase Auth & Google Sign-In
-- **Networking**: Dio (Client), Axios (Server)
-- **Real-time**: Agora SDK for Peer-to-Peer communication
-- **Development Tooling**: Tunnelmole for local testing on physical hardware
+- **Smart Peer Matching**: Instantly connect with users for real-time practice via Agora.
+- **AI Feedback**: Detailed pronunciation and grammar analysis using AI models.
+- **Responsive UI**: Built with `flutter_screenutil` for a perfect look on all screen sizes.
 
 ---
 
 ## 🏁 Execution Guide
 
-### Backend (Local)
+### 1. Backend (Local)
 ```bash
 cd fluentify_backend
 npm install
 npm run start:dev
 ```
 
-### Tunneling (For Mobile Testing)
+### 2. Tunneling (For Mobile Testing)
 ```bash
 npx tunnelmole 3000
 ```
 
-### Mobile App
+### 3. Mobile App
 ```bash
 cd fluentify_frontend
 flutter pub get
 flutter run
-```
-
----
-
-## 📁 Repository Structure
-
-```bash
-fluentify/
-├── fluentify_frontend/     # Flutter mobile codebase
-├── fluentify_backend/      # NestJS backend codebase
-└── assets/screenshots/     # Application visual assets
 ```
 
 ---
