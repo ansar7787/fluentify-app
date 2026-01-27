@@ -47,10 +47,32 @@ class MissionRepositoryImpl implements MissionRepository {
             'Connection timed out. Please check your internet.');
       }
       if (e.response != null) {
-        final message = e.response?.data?['message'] ??
-            'Something went wrong on the server.';
-        return ServerFailure(
-            message is List ? message.join(', ') : message.toString());
+        final data = e.response?.data;
+        String message;
+
+        if (data is Map<String, dynamic>) {
+          message = data['message'] ?? 'Something went wrong on the server.';
+        } else if (data is String) {
+          // If the response is HTML or plain text (e.g., from Nginx/Tunnelmole)
+          if (data.contains('PayloadTooLargeError')) {
+            message = 'File is too large to upload.';
+          } else {
+            // Truncate if too long (e.g. detailed HTML)
+            message = data.length > 100
+                ? 'Server Error: ${e.response?.statusCode}'
+                : data;
+          }
+        } else {
+          message = 'Unexpected error format: ${e.response?.statusCode}';
+        }
+
+        if (e.response?.statusCode == 413) {
+          message = 'File is too large. Please record a shorter audio.';
+        }
+
+        return ServerFailure(message is List
+            ? (message as List).join(', ')
+            : message.toString());
       }
       return const NetworkFailure(
           'Unable to connect to the server. Please check your network.');
