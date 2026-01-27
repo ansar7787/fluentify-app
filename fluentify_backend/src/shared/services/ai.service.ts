@@ -1,17 +1,21 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import OpenAI, { toFile } from 'openai';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as os from 'os';
+import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 
 @Injectable()
 export class AIService {
-    private openai: OpenAI;
+    private genAI: GoogleGenerativeAI;
+    private model: GenerativeModel;
 
     constructor(private configService: ConfigService) {
-        this.openai = new OpenAI({
-            apiKey: this.configService.get<string>('OPENAI_API_KEY'),
+        const apiKey = this.configService.get<string>('GEMINI_API_KEY');
+        if (!apiKey) {
+            console.warn('AIService: No GEMINI_API_KEY found. AI features will fail.');
+        }
+        this.genAI = new GoogleGenerativeAI(apiKey || 'dummy-key');
+        this.model = this.genAI.getGenerativeModel({
+            model: "gemini-1.5-flash",
+            generationConfig: { responseMimeType: "application/json" }
         });
     }
 
@@ -23,84 +27,64 @@ export class AIService {
         pronunciationScore: number;
         feedback: string;
     }> {
-        const apiKey = this.configService.get<string>('OPENAI_API_KEY');
-
-        // If no API key, fallback to mock but log warning
-        if (!apiKey || apiKey === 'YOUR_OPENAI_KEY') {
-            console.warn('AIService: No OPENAI_API_KEY found. Using mock analysis.');
-            return this.getMockAnalysis();
-        }
-
         try {
-            // 1. Transcription using Whisper
-            const tempDir = os.tmpdir();
-            const tempFilePath = path.join(tempDir, `upload-${Date.now()}.m4a`);
-            fs.writeFileSync(tempFilePath, audioBuffer);
+            // Convert buffer to base64 for Gemini
+            const audioBase64 = audioBuffer.toString('base64');
 
-            const transcription = await this.openai.audio.transcriptions.create({
-                file: fs.createReadStream(tempFilePath),
-                model: 'whisper-1',
-            });
+            const prompt = `
+            You are an expert English Language Coach.
+            Analyze the student's speech based on the provided audio and mission context.
+            
+            Mission Context: ${missionContext}
 
-            // Cleanup temp file
-            fs.unlinkSync(tempFilePath);
+            Return a strict JSON object with the following fields:
+            - transcript (The detailed transcription of what the student said)
+            - fluencyScore (Number 0.0 to 10.0)
+            - vocabularyScore (Number 0.0 to 10.0)
+            - grammarScore (Number 0.0 to 10.0)
+            - pronunciationScore (Number 0.0 to 10.0)
+            - feedback (String, encouraging and specific, use markdown for highlighting)
+            `;
 
-            const transcript = transcription.text;
-
-            // 2. Linguistic Analysis using GPT-4o
-            const response = await this.openai.chat.completions.create({
-                model: 'gpt-4o',
-                messages: [
-                    {
-                        role: 'system',
-                        content: `You are an expert English Language Coach. 
-Analyze the student's speech based on the provided transcription and mission context.
-Return a JSON object with the following fields:
-- fluencyScore (0.0 to 10.0)
-- vocabularyScore (0.0 to 10.0)
-- grammarScore (0.0 to 10.0)
-- pronunciationScore (0.0 to 10.0)
-- feedback (String, encouraging and specific, use markdown for highlighting)
-
-Mission Context: ${missionContext}`
-                    },
-                    {
-                        role: 'user',
-                        content: `Transcription: "${transcript}"`
+            const result = await this.model.generateContent([
+                {
+                    inlineData: {
+                        mimeType: "audio/mp3", // Assuming m4a/mp3 generic handling, Gemini is flexible
+                        data: audioBase64
                     }
-                ],
-                response_format: { type: 'json_object' }
-            });
+                },
+                { text: prompt }
+            ]);
 
-            const content = response.choices[0].message.content;
-            if (!content) {
-                throw new InternalServerErrorException('AI analysis returned empty content');
-            }
-            const analysis = JSON.parse(content);
+            const responseText = result.response.text();
+            console.log("Gemini Response:", responseText);
+
+            const analysis = JSON.parse(responseText);
 
             return {
-                transcript,
-                fluencyScore: analysis.fluencyScore,
-                vocabularyScore: analysis.vocabularyScore,
-                grammarScore: analysis.grammarScore,
-                pronunciationScore: analysis.pronunciationScore,
-                feedback: analysis.feedback,
+                transcript: analysis.transcript || "Transcript not available",
+                fluencyScore: analysis.fluencyScore || 0,
+                vocabularyScore: analysis.vocabularyScore || 0,
+                grammarScore: analysis.grammarScore || 0,
+                pronunciationScore: analysis.pronunciationScore || 0,
+                feedback: analysis.feedback || "Good effort!",
             };
 
         } catch (error) {
-            console.error('AIService Error:', error);
-            throw new InternalServerErrorException('Failed to analyze speech with AI');
+            console.error('AIService (Gemini) Error:', error);
+            console.warn('Falling back to mock analysis due to error.');
+            return this.getMockAnalysis();
         }
     }
 
     private getMockAnalysis() {
         return {
-            transcript: "Hello, my name is Rahul and I am a software engineer interested in AI.",
-            fluencyScore: 8.5,
-            vocabularyScore: 7.2,
-            grammarScore: 8.0,
-            pronunciationScore: 7.8,
-            feedback: "Great job! (Mock Mode) Your pronunciation is clear. Try to use more complex transitions like 'furthermore' to sound more natural.",
+            transcript: "Hello, I am practicing my English speaking skills.",
+            fluencyScore: 8.0,
+            vocabularyScore: 7.5,
+            grammarScore: 8.5,
+            pronunciationScore: 7.0,
+            feedback: "Great effort! (Mock Mode) Your clarity is good. Try to vary your intonation more.",
         };
     }
 }

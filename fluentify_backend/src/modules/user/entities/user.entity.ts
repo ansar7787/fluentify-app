@@ -77,6 +77,12 @@ export class User {
     @Column({ nullable: true })
     firebaseUid?: string;
 
+    @Column({ default: 0 })
+    aiUsageCount: number;
+
+    @Column({ type: 'timestamp', nullable: true })
+    lastAiUsageDate?: Date;
+
     @CreateDateColumn()
     createdAt: Date;
 
