@@ -3,12 +3,10 @@ import 'speaking_challenge_model.dart';
 
 class SpeakingLevelModel extends SpeakingLevelEntity {
   const SpeakingLevelModel({
-    required int level,
-    required String title,
+    required super.level,
+    required super.title,
     required List<SpeakingChallengeModel> challenges,
   }) : super(
-          level: level,
-          title: title,
           challenges: challenges,
         );
 

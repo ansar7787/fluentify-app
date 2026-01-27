@@ -2,20 +2,13 @@ import '../../domain/entities/speaking_challenge_entity.dart';
 
 class SpeakingChallengeModel extends SpeakingChallengeEntity {
   const SpeakingChallengeModel({
-    required String id,
-    required String title,
-    required String prompt,
-    String? imageUrl,
-    int durationSeconds = 60,
-    String difficulty = 'Beginner',
-  }) : super(
-          id: id,
-          title: title,
-          prompt: prompt,
-          imageUrl: imageUrl,
-          durationSeconds: durationSeconds,
-          difficulty: difficulty,
-        );
+    required super.id,
+    required super.title,
+    required super.prompt,
+    super.imageUrl,
+    super.durationSeconds = 60,
+    super.difficulty = 'Beginner',
+  });
 
   factory SpeakingChallengeModel.fromJson(Map<String, dynamic> json) {
     return SpeakingChallengeModel(

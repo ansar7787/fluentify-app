@@ -64,7 +64,7 @@ class GameLocalDataSourceImpl implements GameLocalDataSource {
       };
 
       final tierNames = names[tier]!;
-      final title = tierNames[index % tierNames.length] + ' $levelNum';
+      final title = '${tierNames[index % tierNames.length]} $levelNum';
 
       return GrammarLevelModel(
         level: levelNum,
@@ -409,7 +409,7 @@ class GameLocalDataSourceImpl implements GameLocalDataSource {
       };
 
       final tierNames = names[tier]!;
-      final title = tierNames[index % tierNames.length] + ' $levelNum';
+      final title = '${tierNames[index % tierNames.length]} $levelNum';
 
       return SpeakingLevelModel(
         level: levelNum,

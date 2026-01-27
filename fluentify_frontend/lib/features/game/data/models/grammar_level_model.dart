@@ -3,12 +3,10 @@ import 'grammar_challenge_model.dart';
 
 class GrammarLevelModel extends GrammarLevelEntity {
   const GrammarLevelModel({
-    required int level,
-    required String title,
+    required super.level,
+    required super.title,
     required List<GrammarChallengeModel> challenges,
   }) : super(
-          level: level,
-          title: title,
           challenges: challenges,
         );
 

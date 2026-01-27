@@ -2,18 +2,12 @@ import '../../domain/entities/sentence_challenge_entity.dart';
 
 class SentenceChallengeModel extends SentenceChallengeEntity {
   const SentenceChallengeModel({
-    required String id,
-    required String correctSentence,
-    required List<String> shuffledWords,
-    required String hint,
-    String difficulty = 'Beginner',
-  }) : super(
-          id: id,
-          correctSentence: correctSentence,
-          shuffledWords: shuffledWords,
-          hint: hint,
-          difficulty: difficulty,
-        );
+    required super.id,
+    required super.correctSentence,
+    required super.shuffledWords,
+    required super.hint,
+    super.difficulty = 'Beginner',
+  });
 
   factory SentenceChallengeModel.fromJson(Map<String, dynamic> json) {
     return SentenceChallengeModel(

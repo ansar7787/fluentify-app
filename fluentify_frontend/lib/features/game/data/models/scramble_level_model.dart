@@ -3,12 +3,10 @@ import 'sentence_challenge_model.dart';
 
 class ScrambleLevelModel extends ScrambleLevelEntity {
   const ScrambleLevelModel({
-    required int level,
-    required String title,
+    required super.level,
+    required super.title,
     required List<SentenceChallengeModel> challenges,
   }) : super(
-          level: level,
-          title: title,
           challenges: challenges,
         );
 

@@ -2,20 +2,13 @@ import '../../domain/entities/grammar_challenge_entity.dart';
 
 class GrammarChallengeModel extends GrammarChallengeEntity {
   const GrammarChallengeModel({
-    required String id,
-    required String question,
-    required List<String> options,
-    required int correctOptionIndex,
-    required String explanation,
-    String difficulty = 'Beginner',
-  }) : super(
-          id: id,
-          question: question,
-          options: options,
-          correctOptionIndex: correctOptionIndex,
-          explanation: explanation,
-          difficulty: difficulty,
-        );
+    required super.id,
+    required super.question,
+    required super.options,
+    required super.correctOptionIndex,
+    required super.explanation,
+    super.difficulty = 'Beginner',
+  });
 
   factory GrammarChallengeModel.fromJson(Map<String, dynamic> json) {
     return GrammarChallengeModel(
