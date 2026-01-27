@@ -61,8 +61,13 @@ Future<void> setupServiceLocator() async {
   final dio = Dio(
     BaseOptions(
       baseUrl: AppConstants.apiBaseUrl,
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
+      connectTimeout: const Duration(seconds: 60),
+      receiveTimeout: const Duration(seconds: 60),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'User-Agent': 'FluentifyApp/1.0',
+      },
     ),
   );
   getIt.registerSingleton<Dio>(dio);

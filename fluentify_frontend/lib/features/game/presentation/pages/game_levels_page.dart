@@ -6,6 +6,10 @@ import 'dart:ui';
 import '../../../../config/theme/app_theme.dart';
 import '../../domain/models/game_model.dart';
 import 'game_page.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../user/presentation/bloc/user_bloc.dart';
+import '../../../user/presentation/bloc/user_event.dart';
+import '../../../user/presentation/bloc/user_state.dart';
 
 class GameLevelsPage extends StatefulWidget {
   const GameLevelsPage({super.key});
@@ -24,17 +28,34 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
   }
 
   Future<void> _loadProgress() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _highestUnlockedLevel = prefs.getInt('game_highest_level') ?? 1;
-    });
+    final state = context.read<UserBloc>().state;
+    if (state is UserLoaded) {
+      setState(() {
+        _highestUnlockedLevel = state.user.gameLevel;
+      });
+    } else {
+      final prefs = await SharedPreferences.getInstance();
+      setState(() {
+        _highestUnlockedLevel = prefs.getInt('game_highest_level') ?? 1;
+      });
+    }
   }
 
   Future<void> _updateProgress(int completedLevel) async {
     if (completedLevel >= _highestUnlockedLevel) {
-      final prefs = await SharedPreferences.getInstance();
       final newLevel = completedLevel + 1;
+
+      // 1. Update Local (SharedPreferences as fallback)
+      final prefs = await SharedPreferences.getInstance();
       await prefs.setInt('game_highest_level', newLevel);
+
+      // 2. Update Backend via UserBloc
+      if (mounted) {
+        context
+            .read<UserBloc>()
+            .add(UpdateUserProfileEvent(gameLevel: newLevel));
+      }
+
       setState(() {
         _highestUnlockedLevel = newLevel;
       });

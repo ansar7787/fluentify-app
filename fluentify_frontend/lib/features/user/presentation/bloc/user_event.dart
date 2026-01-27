@@ -12,9 +12,10 @@ class GetUserProfileEvent extends UserEvent {}
 class UpdateUserProfileEvent extends UserEvent {
   final String? fullName;
   final String? avatarUrl;
+  final int? gameLevel;
 
-  const UpdateUserProfileEvent({this.fullName, this.avatarUrl});
+  const UpdateUserProfileEvent({this.fullName, this.avatarUrl, this.gameLevel});
 
   @override
-  List<Object?> get props => [fullName, avatarUrl];
+  List<Object?> get props => [fullName, avatarUrl, gameLevel];
 }

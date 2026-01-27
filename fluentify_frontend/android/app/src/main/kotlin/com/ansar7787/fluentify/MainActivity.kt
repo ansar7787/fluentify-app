@@ -1,4 +1,4 @@
-package com.fluentify.app
+package com.ansar7787.fluentify
 
 import io.flutter.embedding.android.FlutterActivity
 

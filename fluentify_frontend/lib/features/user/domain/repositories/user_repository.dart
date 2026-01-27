@@ -6,6 +6,6 @@ abstract class UserRepository {
   Future<Either<Failure, UserEntity>> getProfile();
   Future<Either<Failure, List<UserEntity>>> getLeaderboard({int limit = 20});
   Future<Either<Failure, UserEntity>> updateProfile(
-      {String? fullName, String? avatarUrl});
+      {String? fullName, String? avatarUrl, int? gameLevel});
   Future<Either<Failure, UserEntity>> addCoins(int amount);
 }

@@ -7,6 +7,7 @@ class MissionEntity extends Equatable {
   final String level;
   final int coins;
   final String? content;
+  final bool isCompleted;
 
   const MissionEntity({
     required this.id,
@@ -15,10 +16,12 @@ class MissionEntity extends Equatable {
     required this.level,
     required this.coins,
     this.content,
+    this.isCompleted = false,
   });
 
   @override
-  List<Object?> get props => [id, title, description, level, coins, content];
+  List<Object?> get props =>
+      [id, title, description, level, coins, content, isCompleted];
 }
 
 class MissionFeedbackEntity extends Equatable {

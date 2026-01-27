@@ -30,6 +30,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       final result = await updateProfileUseCase(
         fullName: event.fullName,
         avatarUrl: event.avatarUrl,
+        gameLevel: event.gameLevel,
       );
 
       result.fold(

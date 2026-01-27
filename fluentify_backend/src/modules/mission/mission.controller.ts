@@ -13,11 +13,11 @@ export class MissionController {
     @ApiBearerAuth()
     @Get()
     @ApiOperation({ summary: 'Get all missions' })
-    findAll(@Query('level') level: string) {
+    findAll(@Request() req, @Query('level') level: string) {
         if (level) {
-            return this.missionService.findByLevel(level);
+            return this.missionService.findByLevel(level, req.user);
         }
-        return this.missionService.findAll();
+        return this.missionService.findAll(req.user);
     }
 
     @UseGuards(JwtAuthGuard)

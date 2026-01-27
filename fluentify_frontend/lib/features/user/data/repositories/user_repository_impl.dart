@@ -53,11 +53,12 @@ class UserRepositoryImpl implements UserRepository {
 
   @override
   Future<Either<Failure, UserEntity>> updateProfile(
-      {String? fullName, String? avatarUrl}) async {
+      {String? fullName, String? avatarUrl, int? gameLevel}) async {
     try {
       final response = await dio.patch('/users/me', data: {
         if (fullName != null) 'fullName': fullName,
         if (avatarUrl != null) 'avatarUrl': avatarUrl,
+        if (gameLevel != null) 'gameLevel': gameLevel,
       });
 
       if (response.statusCode == 200) {

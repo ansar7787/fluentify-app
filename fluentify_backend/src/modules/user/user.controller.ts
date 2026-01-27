@@ -20,8 +20,8 @@ export class UserController {
     @ApiBearerAuth()
     @Patch('me')
     @ApiOperation({ summary: 'Update current user profile' })
-    @ApiBody({ schema: { type: 'object', properties: { fullName: { type: 'string' }, avatarUrl: { type: 'string' } } } })
-    async updateProfile(@Request() req, @Body() updateData: { fullName?: string; avatarUrl?: string }) {
+    @ApiBody({ schema: { type: 'object', properties: { fullName: { type: 'string' }, avatarUrl: { type: 'string' }, gameLevel: { type: 'number' } } } })
+    async updateProfile(@Request() req, @Body() updateData: { fullName?: string; avatarUrl?: string; gameLevel?: number }) {
         return this.userService.update(req.user.id, updateData);
     }
 

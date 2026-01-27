@@ -9,6 +9,7 @@ class UserEntity extends Equatable {
   final int streakCount;
   final String level;
   final int missionsCompleted;
+  final int gameLevel;
   final String subscriptionPlan;
   final DateTime? subscriptionExpiry;
 
@@ -21,6 +22,7 @@ class UserEntity extends Equatable {
     required this.streakCount,
     required this.level,
     this.missionsCompleted = 0,
+    this.gameLevel = 1,
     this.subscriptionPlan = 'free',
     this.subscriptionExpiry,
   });
@@ -37,6 +39,7 @@ class UserEntity extends Equatable {
         streakCount,
         level,
         missionsCompleted,
+        gameLevel,
         subscriptionPlan,
         subscriptionExpiry,
       ];

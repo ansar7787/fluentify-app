@@ -50,12 +50,41 @@ export class MissionService {
         return userMission;
     }
 
-    async findAll(): Promise<Mission[]> {
-        return this.missionRepository.find();
+    async findAll(user?: User): Promise<any[]> {
+        const missions = await this.missionRepository.find({ order: { title: 'ASC' } });
+        if (!user) return missions;
+
+        const userMissions = await this.userMissionRepository.find({
+            where: { user: { id: user.id }, isCompleted: true },
+            relations: ['mission']
+        });
+
+        const completedMissionIds = new Set(userMissions.map(um => um.mission.id));
+
+        return missions.map(mission => ({
+            ...mission,
+            isCompleted: completedMissionIds.has(mission.id)
+        }));
     }
 
-    async findByLevel(level: any): Promise<Mission[]> {
-        return this.missionRepository.find({ where: { level } });
+    async findByLevel(level: any, user?: User): Promise<any[]> {
+        const missions = await this.missionRepository.find({ 
+            where: { level },
+            order: { title: 'ASC' }
+        });
+        if (!user) return missions;
+
+        const userMissions = await this.userMissionRepository.find({
+            where: { user: { id: user.id }, isCompleted: true },
+            relations: ['mission']
+        });
+
+        const completedMissionIds = new Set(userMissions.map(um => um.mission.id));
+
+        return missions.map(mission => ({
+            ...mission,
+            isCompleted: completedMissionIds.has(mission.id)
+        }));
     }
 
     async findById(id: string): Promise<Mission | null> {

@@ -10,6 +10,7 @@ class UserModel extends UserEntity {
     required super.streakCount,
     required super.level,
     super.missionsCompleted = 0,
+    super.gameLevel = 1,
     super.subscriptionPlan = 'free',
     super.subscriptionExpiry,
   });
@@ -24,6 +25,7 @@ class UserModel extends UserEntity {
       streakCount: json['streakCount'] ?? 0,
       level: json['level'] ?? json['cefrLevel'] ?? 'Beginner',
       missionsCompleted: json['missionsCompleted'] ?? 0,
+      gameLevel: json['gameLevel'] ?? 1,
       subscriptionPlan: json['subscriptionPlan'] ?? 'free',
       subscriptionExpiry: json['subscriptionExpiry'] != null
           ? DateTime.parse(json['subscriptionExpiry'])
@@ -41,6 +43,7 @@ class UserModel extends UserEntity {
       'streakCount': streakCount,
       'level': level,
       'missionsCompleted': missionsCompleted,
+      'gameLevel': gameLevel,
       'subscriptionPlan': subscriptionPlan,
       'subscriptionExpiry': subscriptionExpiry?.toIso8601String(),
     };

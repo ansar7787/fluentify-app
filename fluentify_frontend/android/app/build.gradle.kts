@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "com.fluentify.app"
+    namespace = "com.ansar7787.fluentify"
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
@@ -25,7 +25,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.fluentify.app"
+        applicationId = "com.ansar7787.fluentify"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

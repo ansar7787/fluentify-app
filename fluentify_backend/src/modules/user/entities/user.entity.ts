@@ -59,6 +59,9 @@ export class User {
     @Column({ default: 0 })
     streakCount: number;
 
+    @Column({ default: 1 })
+    gameLevel: number;
+
     @Column({ type: 'timestamp', nullable: true })
     lastPracticeDate?: Date;
 

@@ -59,6 +59,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, UserEntity>> googleLogin() async {
     try {
       final GoogleSignIn googleSignIn = GoogleSignIn();
+      await googleSignIn.signOut(); // Force account chooser every time
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
       if (googleUser == null) {
@@ -129,10 +130,30 @@ class AuthRepositoryImpl implements AuthRepository {
             'Connection timed out. Please check your internet.');
       }
       if (e.response != null) {
-        final message = e.response?.data?['message'] ??
-            'Something went wrong on the server.';
-        return ServerFailure(
-            message is List ? message.join(', ') : message.toString());
+        final data = e.response?.data;
+        String message;
+
+        if (data is Map<String, dynamic>) {
+          final msg = data['message'];
+          if (msg is List) {
+            message = msg.join(', ');
+          } else {
+            message = msg?.toString() ?? 'Something went wrong on the server.';
+          }
+        } else if (data is String) {
+          // Sometimes HTML is returned (e.g. 404/500/Proxy errors)
+          if (data.contains('<!DOCTYPE html>')) {
+            message = 'Server Error (HTML Response)';
+          } else {
+            message = data;
+          }
+        } else if (data is List) {
+          message = data.join(', ');
+        } else {
+          message = 'Something went wrong on the server.';
+        }
+
+        return ServerFailure(message);
       }
       return const NetworkFailure(
           'Unable to connect to the server. Please check your network.');

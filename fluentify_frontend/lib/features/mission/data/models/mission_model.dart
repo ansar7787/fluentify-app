@@ -8,6 +8,7 @@ class MissionModel extends MissionEntity {
     required super.level,
     required super.coins,
     super.content,
+    super.isCompleted = false,
   });
 
   factory MissionModel.fromJson(Map<String, dynamic> json) {
@@ -16,8 +17,9 @@ class MissionModel extends MissionEntity {
       title: json['title'] ?? '',
       description: json['description'] ?? '',
       level: json['level'] ?? 'Beginner',
-      coins: json['coins'] ?? 0,
+      coins: json['rewardCoins'] ?? 0,
       content: json['content'],
+      isCompleted: json['isCompleted'] ?? false,
     );
   }
 }
