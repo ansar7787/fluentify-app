@@ -14,10 +14,23 @@ import '../bloc/game_state.dart';
 import '../../../user/presentation/bloc/user_bloc.dart';
 import '../../../user/presentation/bloc/user_event.dart';
 import '../../../user/presentation/bloc/user_state.dart';
+import '../games/word_match_game_page.dart';
+import '../games/typing_game_page.dart';
+import '../games/dictation_game_page.dart';
+import '../games/reading_game_page.dart';
+import '../games/rapid_fire_game_page.dart';
+import '../../domain/entities/word_match_level_entity.dart';
+import '../../domain/entities/typing_level_entity.dart';
+import '../../domain/entities/dictation_level_entity.dart';
+import '../../domain/entities/reading_level_entity.dart';
+import '../../domain/entities/rapid_fire_level_entity.dart';
 import 'game_page.dart';
 
 class GameLevelsPage extends StatefulWidget {
-  const GameLevelsPage({super.key});
+  final String
+      gameMode; // 'scramble', 'word_match', 'typing', 'dictation', 'reading', 'rapid_fire'
+
+  const GameLevelsPage({super.key, required this.gameMode});
 
   @override
   State<GameLevelsPage> createState() => _GameLevelsPageState();
@@ -34,6 +47,9 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
 
   Future<void> _loadProgress() async {
     final state = context.read<UserBloc>().state;
+    // Note: ideally we should have separate progress per game mode in User entity
+    // For now, we share 'gameLevel' for simplicity or use specific keys in SharedPreferences
+    // Assume shared level for MVP or use generic key
     if (state is UserLoaded) {
       setState(() {
         _highestUnlockedLevel = state.user.gameLevel;
@@ -41,7 +57,8 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
     } else {
       final prefs = await SharedPreferences.getInstance();
       setState(() {
-        _highestUnlockedLevel = prefs.getInt('game_highest_level') ?? 1;
+        _highestUnlockedLevel =
+            prefs.getInt('game_highest_level_${widget.gameMode}') ?? 1;
       });
     }
   }
@@ -50,9 +67,10 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
     if (completedLevel >= _highestUnlockedLevel) {
       final newLevel = completedLevel + 1;
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('game_highest_level', newLevel);
+      await prefs.setInt('game_highest_level_${widget.gameMode}', newLevel);
 
       if (mounted) {
+        // Only update central user level if this is the main game or aggregate
         context
             .read<UserBloc>()
             .add(UpdateUserProfileEvent(gameLevel: newLevel));
@@ -64,16 +82,55 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
     }
   }
 
+  String _getTitle() {
+    switch (widget.gameMode) {
+      case 'word_match':
+        return 'Word Match';
+      case 'typing':
+        return 'Speed Typer';
+      case 'dictation':
+        return 'Dictation Master';
+      case 'reading':
+        return 'Reading Quest';
+      case 'rapid_fire':
+        return 'Rapid Fire';
+      default:
+        return 'Sentence Master';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return BlocProvider(
-      create: (context) => getIt<GameBloc>()..add(GetScrambleLevelsEvent()),
+      create: (context) {
+        final bloc = getIt<GameBloc>();
+        switch (widget.gameMode) {
+          case 'word_match':
+            bloc.add(GetWordMatchLevelsEvent());
+            break;
+          case 'typing':
+            bloc.add(GetTypingLevelsEvent());
+            break;
+          case 'dictation':
+            bloc.add(GetDictationLevelsEvent());
+            break;
+          case 'reading':
+            bloc.add(GetReadingLevelsEvent());
+            break;
+          case 'rapid_fire':
+            bloc.add(GetRapidFireLevelsEvent());
+            break;
+          default:
+            bloc.add(GetScrambleLevelsEvent());
+        }
+        return bloc;
+      },
       child: Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
-          title: Text('Sentence Master',
+          title: Text(_getTitle(),
               style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 22.sp,
@@ -134,39 +191,55 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
                     Expanded(
                       child: BlocBuilder<GameBloc, GameState>(
                         builder: (context, state) {
+                          List<dynamic> levels = [];
+
                           if (state is GameLoading) {
                             return const Center(
                                 child: CircularProgressIndicator());
-                          } else if (state is ScrambleLevelsLoaded) {
-                            return GridView.builder(
-                              physics: const BouncingScrollPhysics(),
-                              padding:
-                                  EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 20.h),
-                              gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 3,
-                                crossAxisSpacing: 20.w,
-                                mainAxisSpacing: 24.h,
-                                childAspectRatio: 0.75, // Taller cards
-                              ),
-                              itemCount: state.levels.length,
-                              itemBuilder: (context, index) {
-                                final level = state.levels[index];
-                                final isUnlocked = index <
-                                    _highestUnlockedLevel; // Logic check: index 0 is lvl 1. if highest=1, index 0 is unlocked. correct.
-                                final isCurrent =
-                                    level.level == _highestUnlockedLevel;
-                                return _buildLevelCard(
-                                    level, isUnlocked, isCurrent, isDark);
-                              },
-                            );
-                          } else if (state is GameError) {
+                          }
+
+                          if (state is ScrambleLevelsLoaded)
+                            levels = state.levels;
+                          else if (state is WordMatchLevelsLoaded)
+                            levels = state.levels;
+                          else if (state is TypingLevelsLoaded)
+                            levels = state.levels;
+                          else if (state is DictationLevelsLoaded)
+                            levels = state.levels;
+                          else if (state is ReadingLevelsLoaded)
+                            levels = state.levels;
+                          else if (state is RapidFireLevelsLoaded)
+                            levels = state.levels;
+                          else if (state is GameError) {
                             return Center(
                                 child: Text(state.message,
                                     style:
                                         const TextStyle(color: Colors.white)));
                           }
-                          return const SizedBox.shrink();
+
+                          if (levels.isEmpty) return const SizedBox.shrink();
+
+                          return GridView.builder(
+                            physics: const BouncingScrollPhysics(),
+                            padding:
+                                EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 20.h),
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              crossAxisSpacing: 20.w,
+                              mainAxisSpacing: 24.h,
+                              childAspectRatio: 0.75,
+                            ),
+                            itemCount: levels.length,
+                            itemBuilder: (context, index) {
+                              final level = levels[index];
+                              final isUnlocked = index < _highestUnlockedLevel;
+                              final isCurrent =
+                                  (index + 1) == _highestUnlockedLevel;
+                              return _buildLevelCard(
+                                  level, isUnlocked, isCurrent, isDark);
+                            },
+                          );
                         },
                       ),
                     ),
@@ -245,18 +318,49 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
   }
 
   Widget _buildLevelCard(
-      ScrambleLevelEntity level, bool isUnlocked, bool isCurrent, bool isDark) {
+      dynamic level, bool isUnlocked, bool isCurrent, bool isDark) {
     return GestureDetector(
       onTap: () {
         if (isUnlocked) {
+          final onComplete = () => _updateProgress(level.level);
+          Widget page;
+
+          switch (widget.gameMode) {
+            case 'word_match':
+              page = WordMatchGamePage(
+                  level: level as WordMatchLevelEntity,
+                  onLevelComplete: onComplete);
+              break;
+            case 'typing':
+              page = TypingGamePage(
+                  level: level as TypingLevelEntity,
+                  onLevelComplete: onComplete);
+              break;
+            case 'dictation':
+              page = DictationGamePage(
+                  level: level as DictationLevelEntity,
+                  onLevelComplete: onComplete);
+              break;
+            case 'reading':
+              page = ReadingGamePage(
+                  level: level as ReadingLevelEntity,
+                  onLevelComplete: onComplete);
+              break;
+            case 'rapid_fire':
+              page = RapidFireGamePage(
+                  level: level as RapidFireLevelEntity,
+                  onLevelComplete: onComplete);
+              break;
+            default:
+              // Scramble (Sentence Master)
+              page = GamePage(
+                  level: level as ScrambleLevelEntity,
+                  onLevelComplete: onComplete);
+          }
+
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => GamePage(
-                level: level,
-                onLevelComplete: () => _updateProgress(level.level),
-              ),
-            ),
+            MaterialPageRoute(builder: (context) => page),
           ).then((_) => _loadProgress());
         } else {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(

@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../domain/entities/mission_entity.dart';
 import 'mission_detail_page.dart';
 import '../../../peer/presentation/pages/matching_page.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
-import '../../../../core/widgets/app_shimmer.dart';
+
 import '../../../user/presentation/bloc/user_bloc.dart';
 import '../../../user/presentation/bloc/user_event.dart';
 import '../../../user/presentation/bloc/user_state.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../../game/presentation/pages/game_levels_page.dart';
+import '../../../game/presentation/pages/game_home_page.dart';
 import '../../../game/presentation/pages/grammar_levels_page.dart';
 import '../../../game/presentation/pages/speaking_levels_page.dart';
 
@@ -27,372 +28,318 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    // Fetch fresh user data
     context.read<UserBloc>().add(GetUserProfileEvent());
-
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+    Future.delayed(const Duration(seconds: 1), () {
+      if (mounted) setState(() => _isLoading = false);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Fluentify'),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.notifications_none_outlined),
+    return BlocBuilder<UserBloc, UserState>(
+      builder: (context, state) {
+        String firstName = 'Learner';
+        int streak = 0;
+        int coins = 0;
+        String level = 'A1';
+        String? avatarUrl;
+
+        if (state is UserLoaded) {
+          firstName = state.user.fullName.split(' ')[0];
+          streak = state.user.streakCount;
+          coins = state.user.coins;
+          level = state.user.level;
+          avatarUrl = state.user.profileImage;
+        } else {
+          final authState = context.read<AuthBloc>().state;
+          if (authState is AuthAuthenticated) {
+            firstName = authState.user.fullName.split(' ')[0];
+            avatarUrl = authState.user.profileImage;
+          }
+        }
+
+        if (_isLoading || state is UserLoading) {
+          return const Scaffold(
+              body: Center(child: CircularProgressIndicator()));
+        }
+
+        return Scaffold(
+          backgroundColor: const Color(0xFFF8FAFC), // Slate 50
+          bottomNavigationBar: _buildBottomNav(context),
+          body: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              _buildSliverAppBar(context, firstName, avatarUrl),
+              SliverPadding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    _buildStatsRow(streak, coins, level),
+                    const SizedBox(height: 32),
+                    _buildSectionHeader('Arcade Arena', () {}),
+                    const SizedBox(height: 16),
+                    _buildGameCarousel(context),
+                    const SizedBox(height: 32),
+                    _buildSectionHeader('Daily Missions', () {}),
+                    const SizedBox(height: 16),
+                    _buildMissionItem(
+                      context,
+                      "Self Introduction",
+                      "Master the art of introducing yourself.",
+                      Icons.mic_rounded,
+                      Colors.blue,
+                      10,
+                      false,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildMissionItem(
+                      context,
+                      "Business Negotiation",
+                      "Learn key phrases for making deals.",
+                      Icons.business_center_rounded,
+                      Colors.purple,
+                      20,
+                      true,
+                    ),
+                    const SizedBox(height: 32),
+                    _buildSectionHeader('Explore More', () {}),
+                    const SizedBox(height: 16),
+                    _buildPromoCard(context),
+                    const SizedBox(height: 100), // Spacing for fab/bottom nav
+                  ]),
+                ),
+              ),
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: BlocBuilder<UserBloc, UserState>(
-              builder: (context, state) {
-                String? avatarUrl;
-                if (state is UserLoaded) {
-                  avatarUrl = state.user.profileImage;
-                } else {
-                  // Fallback to AuthBloc if UserBloc not ready
-                  final authState = context.read<AuthBloc>().state;
-                  if (authState is AuthAuthenticated) {
-                    avatarUrl = authState.user.profileImage;
-                  }
-                }
-
-                return CircleAvatar(
-                  radius: 18,
-                  backgroundColor: Colors.grey[200],
-                  backgroundImage: avatarUrl != null
-                      ? CachedNetworkImageProvider(avatarUrl)
-                      : null,
-                  child: avatarUrl == null
-                      ? const Icon(Icons.person, color: Colors.grey)
-                      : null,
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-      body: BlocBuilder<UserBloc, UserState>(
-        builder: (context, state) {
-          if (_isLoading || state is UserLoading) {
-            return _buildSkeleton(context);
-          }
-
-          String firstName = 'Learner';
-          int streak = 0;
-          int coins = 0;
-          String level = 'A1';
-
-          if (state is UserLoaded) {
-            firstName = state.user.fullName.split(' ')[0];
-            streak = state.user.streakCount;
-            coins = state.user.coins;
-            level = state.user.level;
-          }
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildWelcomeCard(context, firstName, streak),
-                const SizedBox(height: 32),
-                _buildStatsGrid(context, coins, "1.2k", level),
-                const SizedBox(height: 32),
-                _buildSectionHeader('English Games', () {}),
-                const SizedBox(height: 16),
-                SizedBox(
-                  height: 180,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      _buildGameCard(
-                        context,
-                        'Sentence Scramble',
-                        'Master syntax by reordering words!',
-                        [const Color(0xFFF59E0B), const Color(0xFFD97706)],
-                        Icons.extension,
-                        () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const GameLevelsPage()),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      _buildGameCard(
-                        context,
-                        'Grammar Quest',
-                        'Choose the correct verb forms & rules!',
-                        [const Color(0xFF8B5CF6), const Color(0xFF6D28D9)],
-                        Icons.g_translate,
-                        () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const GrammarLevelsPage()),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      _buildGameCard(
-                        context,
-                        'Fluency Flow',
-                        'Speak and get real-time AI feedback!',
-                        [const Color(0xFF10B981), const Color(0xFF047857)],
-                        Icons.record_voice_over,
-                        () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const SpeakingLevelsPage()),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 32),
-                _buildSectionHeader('Daily Missions', () {}),
-                const SizedBox(height: 16),
-                _buildMissionCard(
-                  context,
-                  'Self Introduction',
-                  'Master the art of introducing yourself in interviews.',
-                  'Beginner',
-                  10,
-                  Colors.blue,
-                ),
-                const SizedBox(height: 16),
-                _buildMissionCard(
-                  context,
-                  'Conflict Resolution',
-                  'Learn how to handle disagreements with coworkers.',
-                  'Intermediate',
-                  25,
-                  Colors.orange,
-                  isPremium: true,
-                ),
-                const SizedBox(height: 32),
-                _buildSectionHeader('Recommended for You', () {}),
-                const SizedBox(height: 16),
-                _buildTrackCard(
-                  context,
-                  'Tech Interview Pro',
-                  '12 Missions • 4 Tracks',
-                  '85% Learners achieved B2 level',
-                  Icons.code,
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        type: BottomNavigationBarType.fixed,
-        onTap: (index) {
-          if (index == 1) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const MatchingPage()),
-            );
-          } else if (index == 2) {
-            Navigator.pushNamed(context, '/leaderboard');
-          } else if (index == 3) {
-            Navigator.pushNamed(context, '/profile');
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.mic), label: 'Practice'),
-          BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Peers'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildSkeleton(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Welcome Card Skeleton
-          AppShimmer.rect(
-              width: double.infinity, height: 200, borderRadius: 24),
-          const SizedBox(height: 32),
-          // Stats Skeleton
-          Row(
+  Widget _buildSliverAppBar(
+      BuildContext context, String name, String? avatarUrl) {
+    return SliverAppBar(
+      expandedHeight: 140,
+      backgroundColor: const Color(0xFF2563EB), // Best Blue
+      floating: false,
+      pinned: true,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF2563EB), Color(0xFF1E40AF)],
+            ),
+          ),
+          child: Stack(
             children: [
-              Expanded(
-                  child: AppShimmer.rect(
-                      width: double.infinity, height: 100, borderRadius: 20)),
-              const SizedBox(width: 16),
-              Expanded(
-                  child: AppShimmer.rect(
-                      width: double.infinity, height: 100, borderRadius: 20)),
-              const SizedBox(width: 16),
-              Expanded(
-                  child: AppShimmer.rect(
-                      width: double.infinity, height: 100, borderRadius: 20)),
+              Positioned(
+                right: -20,
+                top: -20,
+                child: Container(
+                  width: 150,
+                  height: 150,
+                  decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      shape: BoxShape.circle),
+                ),
+              ),
+              Positioned(
+                bottom: 20,
+                left: 20,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text("Welcome back,",
+                        style:
+                            TextStyle(color: Colors.blue[100], fontSize: 14)),
+                    Text(name,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 32),
-          // Header Skeleton
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              AppShimmer.rect(width: 150, height: 24, borderRadius: 4),
-              AppShimmer.rect(width: 60, height: 20, borderRadius: 4),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // Mission Card Skeletons
-          AppShimmer.rect(
-              width: double.infinity, height: 120, borderRadius: 20),
-          const SizedBox(height: 16),
-          AppShimmer.rect(
-              width: double.infinity, height: 120, borderRadius: 20),
-          const SizedBox(height: 32),
-          // Header Skeleton 2
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              AppShimmer.rect(width: 200, height: 24, borderRadius: 4),
-              AppShimmer.rect(width: 60, height: 20, borderRadius: 4),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // Track Card Skeleton
-          AppShimmer.rect(
-              width: double.infinity, height: 180, borderRadius: 24),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWelcomeCard(BuildContext context, String name, int streak) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF2D62ED), Color(0xFF6366F1)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(24),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Keep it up, $name! 🔥',
-            style: const TextStyle(color: Colors.white70, fontSize: 16),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 16),
+          child: CircleAvatar(
+            backgroundColor: Colors.white24,
+            backgroundImage: avatarUrl != null
+                ? CachedNetworkImageProvider(avatarUrl)
+                : null,
+            child: avatarUrl == null
+                ? const Icon(Icons.person, color: Colors.white)
+                : null,
           ),
-          const SizedBox(height: 8),
-          Text(
-            'You are on a $streak-day streak.',
-            style: const TextStyle(
-                color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => Navigator.pushNamed(context, '/subscription'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF2D62ED),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text('Go Premium'),
-          ),
-          const SizedBox(height: 8),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF2D62ED),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text('Start Practice'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatsGrid(
-      BuildContext context, int coins, String words, String level) {
-    return Row(
-      children: [
-        _buildStatItem(coins.toString(), 'Coins earned',
-            Icons.monetization_on_outlined, Colors.amber),
-        const SizedBox(width: 16),
-        _buildStatItem(
-            words, 'Words spoken', Icons.forum_outlined, Colors.teal),
-        const SizedBox(width: 16),
-        _buildStatItem(level, 'Curr. Level', Icons.auto_graph, Colors.blue),
+        ),
       ],
     );
   }
 
-  Widget _buildStatItem(String val, String label, IconData icon, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.grey.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4)),
-          ],
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color),
-            const SizedBox(height: 8),
-            Text(val,
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            const SizedBox(height: 4),
-            Text(label,
-                style: const TextStyle(fontSize: 10, color: Colors.grey)),
-          ],
-        ),
+  Widget _buildStatsRow(int streak, int coins, String level) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 20,
+              offset: const Offset(0, 10))
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildStatItem('Streak', '$streak Days',
+              Icons.local_fire_department_rounded, Colors.orange),
+          Container(width: 1, height: 40, color: Colors.grey[200]),
+          _buildStatItem(
+              'Credits', '$coins', Icons.monetization_on_rounded, Colors.amber),
+          Container(width: 1, height: 40, color: Colors.grey[200]),
+          _buildStatItem('Level', level, Icons.verified_rounded, Colors.blue),
+        ],
       ),
     );
   }
 
-  Widget _buildSectionHeader(String title, VoidCallback onSeeAll) {
+  Widget _buildStatItem(String label, String val, IconData icon, Color color) {
+    return Column(
+      children: [
+        Icon(icon, color: color, size: 28),
+        const SizedBox(height: 4),
+        Text(val,
+            style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: Color(0xFF1E293B))),
+        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader(String title, VoidCallback onTap) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(title,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        TextButton(onPressed: onSeeAll, child: const Text('See All')),
+            style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF0F172A))),
+        // GestureDetector(
+        //   onTap: onTap,
+        //   child: const Text('See All', style: TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.w600)),
+        // ),
       ],
     );
   }
 
-  Widget _buildMissionCard(
-    BuildContext context,
-    String title,
-    String desc,
-    String level,
-    int coins,
-    Color color, {
-    bool isPremium = false,
-  }) {
+  Widget _buildGameCarousel(BuildContext context) {
+    final games = [
+      {
+        'title': 'Arcade Arena',
+        'desc': 'Play mini-games',
+        'color': Colors.indigo,
+        'icon': Icons.games,
+        'page': const GameHomePage()
+      },
+      {
+        'title': 'Grammar Quest',
+        'desc': 'Master rules',
+        'color': Colors.purple,
+        'icon': Icons.text_fields,
+        'page': const GrammarLevelsPage()
+      },
+      {
+        'title': 'Fluency Flow',
+        'desc': 'Speak confidently',
+        'color': Colors.teal,
+        'icon': Icons.mic,
+        'page': const SpeakingLevelsPage()
+      },
+    ];
+
+    return SizedBox(
+      height: 200,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: games.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 16),
+        itemBuilder: (context, index) {
+          final game = games[index];
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => game['page'] as Widget));
+            },
+            child: Container(
+              width: 160,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    (game['color'] as Color).withOpacity(0.8),
+                    (game['color'] as Color)
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                      color: (game['color'] as Color).withOpacity(0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 8))
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(12)),
+                    child: Icon(game['icon'] as IconData, color: Colors.white),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(game['title'] as String,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16)),
+                      const SizedBox(height: 4),
+                      Text(game['desc'] as String,
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 12)),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildMissionItem(BuildContext context, String title, String subtitle,
+      IconData icon, Color color, int reward, bool isLocked) {
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -400,14 +347,13 @@ class _HomePageState extends State<HomePage> {
           MaterialPageRoute(
             builder: (context) => MissionDetailPage(
               mission: MissionEntity(
-                id: isPremium ? 'premium_1' : 'free_1',
+                id: 'mission_${title.hashCode}',
                 title: title,
-                description: desc,
-                level: level,
-                coins: coins,
-                content: title == 'Self Introduction'
-                    ? 'Introduce yourself to a prospective employer. Focus on your background, skills, and why you are a good fit for the role.'
-                    : 'A coworker is pushing back on a deadline. Construct a response that is professional yet assertive.',
+                description: subtitle,
+                level: isLocked ? 'Intermediate' : 'Beginner',
+                coins: reward,
+                content:
+                    'Mission content for $title. Practice your skills here.',
               ),
             ),
           ),
@@ -415,181 +361,152 @@ class _HomePageState extends State<HomePage> {
       },
       borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+          border: Border.all(color: Colors.grey[100]!),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
-              ),
-              child: Icon(isPremium ? Icons.workspace_premium : Icons.mic_none,
-                  color: color),
+                  color: color.withOpacity(0.1), shape: BoxShape.circle),
+              child: Icon(icon, color: color),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Text(title,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16)),
-                      if (isPremium) ...[
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                              color: Colors.amber[100],
-                              borderRadius: BorderRadius.circular(4)),
-                          child: const Text('PRO',
-                              style: TextStyle(
-                                  fontSize: 10, fontWeight: FontWeight.bold)),
-                        ),
-                      ],
-                    ],
-                  ),
-                  Text(desc,
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
+                  Text(title,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Color(0xFF1E293B))),
+                  Text(subtitle,
+                      style: TextStyle(color: Colors.grey[500], fontSize: 12)),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+            if (isLocked)
+              const Icon(Icons.lock_rounded, color: Colors.grey)
+            else
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                    color: Colors.amber[50],
+                    borderRadius: BorderRadius.circular(20)),
+                child: Row(
+                  children: [
+                    const Icon(Icons.monetization_on,
+                        size: 14, color: Colors.amber),
+                    const SizedBox(width: 4),
+                    Text('+$reward',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.amber,
+                            fontSize: 12)),
+                  ],
+                ),
+              )
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTrackCard(BuildContext context, String title, String stats,
-      String promo, IconData icon) {
+  Widget _buildPromoCard(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
+        color: const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(24),
+        image: const DecorationImage(
+          image: NetworkImage(
+              'https://img.freepik.com/free-vector/gradient-technological-background_23-2148884155.jpg'), // Placeholder or asset
+          fit: BoxFit.cover,
+          opacity: 0.2,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(icon, color: Colors.blueAccent),
-              const SizedBox(width: 12),
-              Text(title,
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18)),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(stats, style: const TextStyle(color: Colors.white70)),
-          const SizedBox(height: 16),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12)),
-            child: Text(promo,
-                style: const TextStyle(color: Colors.blueAccent, fontSize: 12)),
+                color: Colors.blue, borderRadius: BorderRadius.circular(8)),
+            child: const Text('NEW',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold)),
           ),
+          const SizedBox(height: 12),
+          const Text('Join the Tournament',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          const Text('Compete with others and win exclusive badges.',
+              style: TextStyle(color: Colors.white70)),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: const Color(0xFF1E293B),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Register Now'),
+          )
         ],
       ),
     );
   }
 
-  Widget _buildGameCard(
-    BuildContext context,
-    String title,
-    String subtitle,
-    List<Color> colors,
-    IconData icon,
-    VoidCallback onTap,
-  ) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
-      child: Container(
-        width: 280,
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: colors,
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: colors[0].withValues(alpha: 0.3),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      'FEATURED',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    title,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(color: Colors.white70, fontSize: 12),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: colors[1], size: 24),
-            ),
-          ],
-        ),
+  Widget _buildBottomNav(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 20,
+              offset: const Offset(0, -5))
+        ],
+      ),
+      child: BottomNavigationBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        currentIndex: 0,
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: const Color(0xFF2563EB),
+        unselectedItemColor: Colors.grey[400],
+        showUnselectedLabels: true,
+        onTap: (index) {
+          if (index == 1)
+            Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const MatchingPage()));
+          else if (index == 2)
+            Navigator.pushNamed(context, '/leaderboard');
+          else if (index == 3) Navigator.pushNamed(context, '/profile');
+        },
+        items: const [
+          BottomNavigationBarItem(
+              icon: Icon(Icons.home_rounded), label: 'Home'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.people_rounded), label: 'Peers'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.leaderboard_rounded), label: 'Rank'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.person_rounded), label: 'Profile'),
+        ],
       ),
     );
   }

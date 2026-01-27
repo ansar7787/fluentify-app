@@ -14,11 +14,12 @@ class LeaderboardLoading extends LeaderboardState {}
 
 class LeaderboardLoaded extends LeaderboardState {
   final List<UserEntity> rankings;
+  final int userRank;
 
-  const LeaderboardLoaded(this.rankings);
+  const LeaderboardLoaded(this.rankings, this.userRank);
 
   @override
-  List<Object?> get props => [rankings];
+  List<Object?> get props => [rankings, userRank];
 }
 
 class LeaderboardError extends LeaderboardState {

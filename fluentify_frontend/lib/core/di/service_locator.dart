@@ -13,6 +13,7 @@ import '../../features/user/data/repositories/user_repository_impl.dart';
 import '../../features/user/domain/repositories/user_repository.dart';
 import '../../features/user/domain/usecases/get_user_profile_usecase.dart';
 import '../../features/user/domain/usecases/get_leaderboard_usecase.dart';
+import '../../features/user/domain/usecases/get_user_rank_usecase.dart';
 import '../../features/user/domain/usecases/update_profile_usecase.dart';
 import '../../features/user/presentation/bloc/user_bloc.dart';
 import '../../features/user/presentation/bloc/leaderboard_bloc.dart';
@@ -48,6 +49,11 @@ import '../../features/game/domain/repositories/game_repository.dart';
 import '../../features/game/domain/usecases/get_grammar_levels_usecase.dart';
 import '../../features/game/domain/usecases/get_speaking_levels_usecase.dart';
 import '../../features/game/domain/usecases/get_scramble_levels_usecase.dart';
+import '../../features/game/domain/usecases/get_word_match_levels_usecase.dart';
+import '../../features/game/domain/usecases/get_typing_levels_usecase.dart';
+import '../../features/game/domain/usecases/get_dictation_levels_usecase.dart';
+import '../../features/game/domain/usecases/get_reading_levels_usecase.dart';
+import '../../features/game/domain/usecases/get_rapid_fire_levels_usecase.dart';
 import '../../features/game/presentation/bloc/game_bloc.dart';
 
 import '../constants/app_constants.dart';
@@ -138,6 +144,8 @@ Future<void> setupServiceLocator() async {
       () => GetUserProfileUseCase(getIt<UserRepository>()));
   getIt.registerLazySingleton(
       () => GetLeaderboardUseCase(getIt<UserRepository>()));
+  getIt
+      .registerLazySingleton(() => GetUserRankUseCase(getIt<UserRepository>()));
   getIt.registerLazySingleton(
       () => UpdateProfileUseCase(getIt<UserRepository>()));
   getIt.registerFactory(
@@ -146,8 +154,10 @@ Future<void> setupServiceLocator() async {
       updateProfileUseCase: getIt<UpdateProfileUseCase>(),
     ),
   );
-  getIt.registerFactory(() =>
-      LeaderboardBloc(getLeaderboardUseCase: getIt<GetLeaderboardUseCase>()));
+  getIt.registerFactory(() => LeaderboardBloc(
+        getLeaderboardUseCase: getIt<GetLeaderboardUseCase>(),
+        getUserRankUseCase: getIt<GetUserRankUseCase>(),
+      ));
 
   // Mentor
   getIt.registerLazySingleton<MentorRemoteDataSource>(
@@ -211,11 +221,32 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton(
     () => GetScrambleLevelsUseCase(getIt<GameRepository>()),
   );
+  getIt.registerLazySingleton(
+    () => GetWordMatchLevelsUseCase(getIt<GameRepository>()),
+  );
+  getIt.registerLazySingleton(
+    () => GetTypingLevelsUseCase(getIt<GameRepository>()),
+  );
+  getIt.registerLazySingleton(
+    () => GetDictationLevelsUseCase(getIt<GameRepository>()),
+  );
+  getIt.registerLazySingleton(
+    () => GetReadingLevelsUseCase(getIt<GameRepository>()),
+  );
+  getIt.registerLazySingleton(
+    () => GetRapidFireLevelsUseCase(getIt<GameRepository>()),
+  );
+
   getIt.registerFactory(
     () => GameBloc(
       getGrammarLevels: getIt<GetGrammarLevelsUseCase>(),
       getSpeakingLevels: getIt<GetSpeakingLevelsUseCase>(),
       getScrambleLevels: getIt<GetScrambleLevelsUseCase>(),
+      getWordMatchLevels: getIt<GetWordMatchLevelsUseCase>(),
+      getTypingLevels: getIt<GetTypingLevelsUseCase>(),
+      getDictationLevels: getIt<GetDictationLevelsUseCase>(),
+      getReadingLevels: getIt<GetReadingLevelsUseCase>(),
+      getRapidFireLevels: getIt<GetRapidFireLevelsUseCase>(),
     ),
   );
 }

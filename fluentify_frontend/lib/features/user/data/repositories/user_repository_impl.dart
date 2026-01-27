@@ -52,6 +52,24 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
+  Future<Either<Failure, int>> getUserRank() async {
+    try {
+      final response = await dio.get('/users/me/rank');
+      if (response.statusCode == 200) {
+        return Right(response.data['rank'] as int);
+      } else {
+        return const Left(ServerFailure('Failed to fetch user rank'));
+      }
+    } on DioException catch (e) {
+      return Left(ServerFailure(
+        e.response?.data['message'] ?? 'Network error occurred',
+      ));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, UserEntity>> updateProfile({
     String? fullName,
     String? avatarUrl,

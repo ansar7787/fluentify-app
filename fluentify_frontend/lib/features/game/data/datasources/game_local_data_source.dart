@@ -8,11 +8,26 @@ import '../models/speaking_level_model.dart';
 import '../models/speaking_challenge_model.dart';
 import '../models/scramble_level_model.dart';
 import '../models/sentence_challenge_model.dart';
+import '../../domain/entities/word_match_level_entity.dart';
+import '../../domain/entities/typing_level_entity.dart';
+import '../../domain/entities/dictation_level_entity.dart';
+import '../../domain/entities/reading_level_entity.dart';
+import '../../domain/entities/rapid_fire_level_entity.dart';
+import '../models/word_match_models.dart';
+import '../models/typing_models.dart';
+import '../models/dictation_models.dart';
+import '../models/reading_models.dart';
+import '../models/rapid_fire_models.dart';
 
 abstract class GameLocalDataSource {
   Future<List<GrammarLevelEntity>> getGrammarLevels();
   Future<List<SpeakingLevelEntity>> getSpeakingLevels();
   Future<List<ScrambleLevelEntity>> getScrambleLevels();
+  Future<List<WordMatchLevelEntity>> getWordMatchLevels();
+  Future<List<TypingLevelEntity>> getTypingLevels();
+  Future<List<DictationLevelEntity>> getDictationLevels();
+  Future<List<ReadingLevelEntity>> getReadingLevels();
+  Future<List<RapidFireLevelEntity>> getRapidFireLevels();
 }
 
 class GameLocalDataSourceImpl implements GameLocalDataSource {
@@ -890,5 +905,142 @@ class GameLocalDataSourceImpl implements GameLocalDataSource {
       hint: hint,
       difficulty: difficulty,
     );
+  }
+
+  // --- Word Match ---
+  @override
+  Future<List<WordMatchLevelModel>> getWordMatchLevels() async {
+    return List.generate(100, (index) {
+      return WordMatchLevelModel(
+        level: index + 1,
+        title: 'Word Match ${index + 1}',
+        challenges: _generateWordMatchChallenges(index + 1),
+      );
+    });
+  }
+
+  List<WordMatchChallengeModel> _generateWordMatchChallenges(int level) {
+    int count = 3;
+    List<WordMatchChallengeModel> list = [];
+    for (int i = 0; i < count; i++) {
+      list.add(_generateProceduralWordMatch(level, i));
+    }
+    return list;
+  }
+
+  WordMatchChallengeModel _generateProceduralWordMatch(int level, int index) {
+    final pairs = [
+      WordPairModel(word: 'Big', match: 'Large'),
+      WordPairModel(word: 'Happy', match: 'Joyful'),
+      WordPairModel(word: 'Fast', match: 'Quick'),
+      WordPairModel(word: 'Start', match: 'Begin'),
+      WordPairModel(word: 'End', match: 'Finish'),
+      WordPairModel(word: 'Smart', match: 'Clever'),
+      WordPairModel(word: 'Hard', match: 'Difficult'),
+      WordPairModel(word: 'Rich', match: 'Wealthy'),
+      WordPairModel(word: 'Safe', match: 'Secure'),
+      WordPairModel(word: 'Old', match: 'Ancient'),
+    ];
+    // Shuffle pairs logic would be better here, simple slice for now
+    final p = pairs.take(3 + (level % 3)).toList();
+    return WordMatchChallengeModel(
+      id: 'wm_${level}_$index',
+      instruction: 'Match synonyms',
+      pairs: p,
+    );
+  }
+
+  // --- Typing Speed ---
+  @override
+  Future<List<TypingLevelModel>> getTypingLevels() async {
+    return List.generate(100, (index) {
+      return TypingLevelModel(
+        level: index + 1,
+        title: 'Typing Level ${index + 1}',
+        challenges: _generateTypingChallenges(index + 1),
+      );
+    });
+  }
+
+  List<TypingChallengeModel> _generateTypingChallenges(int level) {
+    return [
+      TypingChallengeModel(
+        id: 't_${level}_0',
+        textToType: 'The quick brown fox jumps over the lazy dog.',
+        timeLimitSeconds: 60 - (level ~/ 2).clamp(0, 40),
+        difficulty: level > 50 ? 'Advanced' : 'Beginner',
+      )
+    ];
+  }
+
+  // --- Dictation ---
+  @override
+  Future<List<DictationLevelModel>> getDictationLevels() async {
+    return List.generate(100, (index) {
+      return DictationLevelModel(
+        level: index + 1,
+        title: 'Dictation ${index + 1}',
+        challenges: _generateDictationChallenges(index + 1),
+      );
+    });
+  }
+
+  List<DictationChallengeModel> _generateDictationChallenges(int level) {
+    return [
+      DictationChallengeModel(
+        id: 'd_${level}_0',
+        correctText: 'This is a practice sentence for level $level.',
+        hint: 'Listen carefully.',
+        difficulty: 'Beginner',
+      )
+    ];
+  }
+
+  // --- Reading ---
+  @override
+  Future<List<ReadingLevelModel>> getReadingLevels() async {
+    return List.generate(100, (index) {
+      return ReadingLevelModel(
+        level: index + 1,
+        title: 'Reading ${index + 1}',
+        challenges: _generateReadingChallenges(index + 1),
+      );
+    });
+  }
+
+  List<ReadingChallengeModel> _generateReadingChallenges(int level) {
+    return [
+      ReadingChallengeModel(
+        id: 'r_${level}_0',
+        title: 'The Park',
+        passage: 'John went to the park. He saw a big dog.',
+        question: 'What did John see?',
+        options: ['A cat', 'A dog', 'A bird', 'A car'],
+        correctOptionIndex: 1,
+      )
+    ];
+  }
+
+  // --- Rapid Fire ---
+  @override
+  Future<List<RapidFireLevelModel>> getRapidFireLevels() async {
+    return List.generate(100, (index) {
+      return RapidFireLevelModel(
+        level: index + 1,
+        title: 'Rapid Fire ${index + 1}',
+        challenges: _generateRapidFireChallenges(index + 1),
+      );
+    });
+  }
+
+  List<RapidFireChallengeModel> _generateRapidFireChallenges(int level) {
+    return [
+      RapidFireChallengeModel(
+        id: 'rf_${level}_0',
+        question: 'Name a fruit that is red.',
+        acceptableAnswers: ['Apple', 'Strawberry', 'Cherry', 'Tomato'],
+        timeLimitSeconds: 5,
+      )
+    ];
   }
 }

@@ -27,6 +27,7 @@ import 'package:fluentify/features/user/presentation/bloc/user_bloc.dart';
 import 'package:fluentify/features/user/presentation/bloc/leaderboard_bloc.dart';
 import 'package:fluentify/features/user/domain/usecases/get_user_profile_usecase.dart';
 import 'package:fluentify/features/user/domain/usecases/get_leaderboard_usecase.dart';
+import 'package:fluentify/features/user/domain/usecases/get_user_rank_usecase.dart';
 import 'package:fluentify/features/user/domain/usecases/update_profile_usecase.dart';
 import 'package:fluentify/features/peer/presentation/bloc/peer_bloc.dart';
 import 'package:fluentify/core/theme/theme_cubit.dart';
@@ -90,6 +91,7 @@ class FluentifyApp extends StatelessWidget {
         BlocProvider(
           create: (_) => LeaderboardBloc(
             getLeaderboardUseCase: getIt<GetLeaderboardUseCase>(),
+            getUserRankUseCase: getIt<GetUserRankUseCase>(),
           ),
         ),
         BlocProvider(

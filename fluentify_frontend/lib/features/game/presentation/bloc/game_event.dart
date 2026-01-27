@@ -12,3 +12,13 @@ class GetGrammarLevelsEvent extends GameEvent {}
 class GetSpeakingLevelsEvent extends GameEvent {}
 
 class GetScrambleLevelsEvent extends GameEvent {}
+
+class GetWordMatchLevelsEvent extends GameEvent {}
+
+class GetTypingLevelsEvent extends GameEvent {}
+
+class GetDictationLevelsEvent extends GameEvent {}
+
+class GetReadingLevelsEvent extends GameEvent {}
+
+class GetRapidFireLevelsEvent extends GameEvent {}
