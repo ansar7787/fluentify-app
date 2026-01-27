@@ -31,6 +31,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         fullName: event.fullName,
         avatarUrl: event.avatarUrl,
         gameLevel: event.gameLevel,
+        grammarLevel: event.grammarLevel,
+        speakingLevel: event.speakingLevel,
       );
 
       result.fold(

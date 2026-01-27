@@ -13,9 +13,23 @@ class UpdateUserProfileEvent extends UserEvent {
   final String? fullName;
   final String? avatarUrl;
   final int? gameLevel;
+  final int? grammarLevel;
+  final int? speakingLevel;
 
-  const UpdateUserProfileEvent({this.fullName, this.avatarUrl, this.gameLevel});
+  const UpdateUserProfileEvent({
+    this.fullName,
+    this.avatarUrl,
+    this.gameLevel,
+    this.grammarLevel,
+    this.speakingLevel,
+  });
 
   @override
-  List<Object?> get props => [fullName, avatarUrl, gameLevel];
+  List<Object?> get props => [
+        fullName,
+        avatarUrl,
+        gameLevel,
+        grammarLevel,
+        speakingLevel,
+      ];
 }

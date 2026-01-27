@@ -10,6 +10,8 @@ class UserEntity extends Equatable {
   final String level;
   final int missionsCompleted;
   final int gameLevel;
+  final int grammarLevel;
+  final int speakingLevel;
   final String subscriptionPlan;
   final DateTime? subscriptionExpiry;
 
@@ -23,6 +25,8 @@ class UserEntity extends Equatable {
     required this.level,
     this.missionsCompleted = 0,
     this.gameLevel = 1,
+    this.grammarLevel = 1,
+    this.speakingLevel = 1,
     this.subscriptionPlan = 'free',
     this.subscriptionExpiry,
   });
@@ -40,6 +44,8 @@ class UserEntity extends Equatable {
         level,
         missionsCompleted,
         gameLevel,
+        grammarLevel,
+        speakingLevel,
         subscriptionPlan,
         subscriptionExpiry,
       ];

@@ -11,6 +11,8 @@ class UserModel extends UserEntity {
     required super.level,
     super.missionsCompleted = 0,
     super.gameLevel = 1,
+    super.grammarLevel = 1,
+    super.speakingLevel = 1,
     super.subscriptionPlan = 'free',
     super.subscriptionExpiry,
   });
@@ -26,6 +28,8 @@ class UserModel extends UserEntity {
       level: json['level'] ?? json['cefrLevel'] ?? 'Beginner',
       missionsCompleted: json['missionsCompleted'] ?? 0,
       gameLevel: json['gameLevel'] ?? 1,
+      grammarLevel: json['grammarLevel'] ?? 1,
+      speakingLevel: json['speakingLevel'] ?? 1,
       subscriptionPlan: json['subscriptionPlan'] ?? 'free',
       subscriptionExpiry: json['subscriptionExpiry'] != null
           ? DateTime.parse(json['subscriptionExpiry'])
@@ -44,6 +48,8 @@ class UserModel extends UserEntity {
       'level': level,
       'missionsCompleted': missionsCompleted,
       'gameLevel': gameLevel,
+      'grammarLevel': grammarLevel,
+      'speakingLevel': speakingLevel,
       'subscriptionPlan': subscriptionPlan,
       'subscriptionExpiry': subscriptionExpiry?.toIso8601String(),
     };

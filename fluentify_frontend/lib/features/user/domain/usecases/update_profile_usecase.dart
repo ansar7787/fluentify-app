@@ -8,9 +8,19 @@ class UpdateProfileUseCase {
 
   UpdateProfileUseCase(this.repository);
 
-  Future<Either<Failure, UserEntity>> call(
-      {String? fullName, String? avatarUrl, int? gameLevel}) async {
+  Future<Either<Failure, UserEntity>> call({
+    String? fullName,
+    String? avatarUrl,
+    int? gameLevel,
+    int? grammarLevel,
+    int? speakingLevel,
+  }) async {
     return await repository.updateProfile(
-        fullName: fullName, avatarUrl: avatarUrl, gameLevel: gameLevel);
+      fullName: fullName,
+      avatarUrl: avatarUrl,
+      gameLevel: gameLevel,
+      grammarLevel: grammarLevel,
+      speakingLevel: speakingLevel,
+    );
   }
 }
