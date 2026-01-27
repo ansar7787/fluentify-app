@@ -1,7 +1,7 @@
 class AppConstants {
   static const String appName = 'Fluentify';
   static String get apiBaseUrl {
-    return 'https://fluentify-app.vercel.app';
+    return 'https://fluentify-app-1bul-1to3zknxs-ansar7787s-projects.vercel.app';
   }
 
   // Storage Keys

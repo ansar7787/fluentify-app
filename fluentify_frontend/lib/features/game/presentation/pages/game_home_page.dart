@@ -66,7 +66,7 @@ class GameHomePage extends StatelessWidget {
                 letterSpacing: 1.2,
                 shadows: [
                   Shadow(
-                      color: Colors.black.withOpacity(0.3),
+                      color: Colors.black.withValues(alpha: 0.3),
                       offset: const Offset(0, 2),
                       blurRadius: 4)
                 ])),
@@ -135,14 +135,14 @@ class GameHomePage extends StatelessWidget {
         height: 140.h,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24.r),
-          color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
           border: Border.all(
-            color: isDark ? Colors.white.withOpacity(0.1) : Colors.white,
+            color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white,
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: game.color.withOpacity(0.3),
+              color: game.color.withValues(alpha: 0.3),
               blurRadius: 20,
               offset: const Offset(0, 8),
               spreadRadius: -5,
@@ -161,7 +161,7 @@ class GameHomePage extends StatelessWidget {
                   width: 150.w,
                   height: 150.h,
                   decoration: BoxDecoration(
-                    color: game.color.withOpacity(0.1),
+                    color: game.color.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -174,9 +174,10 @@ class GameHomePage extends StatelessWidget {
                     Container(
                       padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
-                        color: game.color.withOpacity(0.2),
+                        color: game.color.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20.r),
-                        border: Border.all(color: game.color.withOpacity(0.3)),
+                        border: Border.all(
+                            color: game.color.withValues(alpha: 0.3)),
                       ),
                       child: Icon(game.icon, color: game.color, size: 32.w),
                     ),
@@ -241,7 +242,7 @@ class GameHomePage extends StatelessWidget {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.blue.withOpacity(0.05),
+                  color: Colors.blue.withValues(alpha: 0.05),
                   blurRadius: 50,
                   spreadRadius: 20,
                 )
