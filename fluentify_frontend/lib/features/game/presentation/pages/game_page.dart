@@ -4,13 +4,16 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import 'dart:ui';
 import '../../../../config/theme/app_theme.dart';
-import '../../domain/models/game_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../features/user/domain/repositories/user_repository.dart';
+import '../../domain/entities/scramble_level_entity.dart';
+
+import '../../domain/usecases/get_scramble_levels_usecase.dart';
+import '../../../../core/usecases/usecase.dart';
 
 class GamePage extends StatefulWidget {
-  final GameLevel level;
+  final ScrambleLevelEntity level;
   final VoidCallback? onLevelComplete;
   const GamePage({super.key, required this.level, this.onLevelComplete});
 
@@ -34,12 +37,10 @@ class _GamePageState extends State<GamePage> {
 
   Future<void> _loadCoins() async {
     final prefs = await SharedPreferences.getInstance();
-    // Try to fetch from server first for accurate balance
     try {
       final result = await getIt<UserRepository>().getProfile();
       result.fold(
         (failure) {
-          // Fallback to local
           setState(() {
             _coins = prefs.getInt('user_coins') ?? 100;
           });
@@ -52,7 +53,6 @@ class _GamePageState extends State<GamePage> {
         },
       );
     } catch (e) {
-      // Fallback
       setState(() {
         _coins = prefs.getInt('user_coins') ?? 100;
       });
@@ -60,17 +60,14 @@ class _GamePageState extends State<GamePage> {
   }
 
   Future<void> _addCoins(int amount) async {
-    // 1. Optimistic Update (Local)
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _coins += amount;
     });
     await prefs.setInt('user_coins', _coins);
 
-    // 2. Sync to Server
     try {
       await getIt<UserRepository>().addCoins(amount);
-      // We could re-fetch boolean success but optimistic is better for game feel
     } catch (e) {
       debugPrint('Failed to sync coins: $e');
     }
@@ -111,8 +108,7 @@ class _GamePageState extends State<GamePage> {
     });
 
     if (_isCorrect!) {
-      _addCoins(10); // Reward 10 coins
-      // Show success feedback
+      _addCoins(10);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -149,7 +145,6 @@ class _GamePageState extends State<GamePage> {
         _loadChallenge();
       });
     } else {
-      // Level Complete
       if (widget.onLevelComplete != null) {
         widget.onLevelComplete!();
       }
@@ -195,8 +190,8 @@ class _GamePageState extends State<GamePage> {
                   children: [
                     TextButton(
                       onPressed: () {
-                        Navigator.pop(context); // Dialog
-                        Navigator.pop(context); // Page
+                        Navigator.pop(context);
+                        Navigator.pop(context);
                       },
                       child: Text('Levels',
                           style:
@@ -205,7 +200,7 @@ class _GamePageState extends State<GamePage> {
                     SizedBox(width: 20.w),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.pop(context); // Close dialog
+                        Navigator.pop(context);
                         _navigateToNextLevel();
                       },
                       style: ElevatedButton.styleFrom(
@@ -213,8 +208,7 @@ class _GamePageState extends State<GamePage> {
                         foregroundColor: Colors.black,
                         padding: EdgeInsets.symmetric(
                             horizontal: 24.w, vertical: 12.h),
-                        minimumSize:
-                            Size(120.w, 48.h), // Override global infinite width
+                        minimumSize: Size(120.w, 48.h),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15.r)),
                       ),
@@ -230,50 +224,34 @@ class _GamePageState extends State<GamePage> {
     );
   }
 
-  void _navigateToNextLevel() {
-    // Find next level
-    final allLevels = GameLevel.getLevels();
-    final currentLevelNum = widget.level.level;
-    if (currentLevelNum < allLevels.length) {
-      final nextLevel = allLevels[
-          currentLevelNum]; // index is levelNum (since 0-based is lv1)
-      Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => GamePage(
-                    level: nextLevel,
-                    // Chain the callback to ensure persistent progress continues
-                    onLevelComplete: widget.onLevelComplete != null
-                        ? () => _updateProgressExternal(nextLevel.level)
-                        : null,
-                  )));
-    } else {
-      Navigator.pop(context); // Finished all levels
-    }
+  void _navigateToNextLevel() async {
+    final usecase = getIt<GetScrambleLevelsUseCase>();
+    final result = await usecase(NoParams());
+    result.fold((failure) => Navigator.pop(context), (levels) {
+      final currentLevelNum = widget.level.level;
+      if (currentLevelNum < levels.length) {
+        final nextLevel = levels[currentLevelNum];
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => GamePage(
+                      level: nextLevel,
+                      onLevelComplete: widget.onLevelComplete != null
+                          ? () => _updateProgressExternal(nextLevel.level)
+                          : null,
+                    )));
+      } else {
+        Navigator.pop(context);
+      }
+    });
   }
 
-  // Helper to call the original parent callback if needed,
-  // though easier is just to rely on GameLevelsPage passing a callback that handles 'updates' generically.
-  // Actually, standardizing: The callback passed from LevelsPage handles 'completed level N'.
-  void _updateProgressExternal(int level) {
-    // We assume the parent passed a logic that updates based on the COMPLETED level.
-    // But if we navigate deeply, we lose the direct parent context.
-    // Ideally, we should just update SharedPreferences here too or use a singleton.
-    // But for now, we'll try to re-use the callback mechanism if it's cleaner,
-    // OR just rely on the user going back.
-    // Since I implemented logic in _navigateToNextLevel to find next, let's just make sure we save progress.
-    // I'll quickly duplicate the save logic here to be safe since callbacks might get lost in pushReplacement chains
-    // if not carefully managed.
+  void _updateProgressExternal(int level) async {
     _saveProgress(level);
   }
 
   Future<void> _saveProgress(int completedLevel) async {
-    // Only update if higher
-    // We can't easily access the parent state update function without passing it down chain.
-    // So we'll update shared prefs directly here to ensure it saves.
-    // The LevelsPage will reload from SP on focus/init.
-    final importSharedPreferences =
-        await SharedPreferences.getInstance(); // Requires import
+    final importSharedPreferences = await SharedPreferences.getInstance();
     final currentHighest =
         importSharedPreferences.getInt('game_highest_level') ?? 1;
     if (completedLevel >= currentHighest) {
@@ -296,39 +274,30 @@ class _GamePageState extends State<GamePage> {
             end: Alignment.bottomRight,
             colors: isDark
                 ? [
-                    const Color(0xFF1E1B4B), // Deep Indigo
-                    const Color(0xFF312E81), // Rich Indigo
-                    const Color(0xFF0F172A), // Slate
+                    const Color(0xFF1E1B4B),
+                    const Color(0xFF312E81),
+                    const Color(0xFF0F172A),
                   ]
                 : [
-                    const Color(0xFFE0F7FA), // Light Cyan
-                    const Color(0xFFE1F5FE), // Light Light Blue
-                    const Color(0xFFFFF3E0), // Warm tint
+                    const Color(0xFFE0F7FA),
+                    const Color(0xFFE1F5FE),
+                    const Color(0xFFFFF3E0),
                   ],
           ),
         ),
         child: Stack(
           children: [
-            // Enhanced Background blobs
             _buildBackgroundAuroras(isDark),
-
-            // Content
             SafeArea(
               child: Column(
                 children: [
-                  // Custom Header
                   _buildCustomHeader(context, isDark),
-
                   Expanded(
                     child: SingleChildScrollView(
                       padding: EdgeInsets.symmetric(horizontal: 24.w),
                       child: Column(
                         children: [
-                          /* 
-                           * PROGRESS & INFO 
-                           */
                           SizedBox(height: 10.h),
-                          // Level & Progress Row
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -355,7 +324,6 @@ class _GamePageState extends State<GamePage> {
                             ],
                           ),
                           SizedBox(height: 8.h),
-                          // Custom Progress Bar
                           Container(
                             height: 8.h,
                             width: double.infinity,
@@ -388,12 +356,7 @@ class _GamePageState extends State<GamePage> {
                             ).animate().shimmer(
                                 duration: 2.seconds, color: Colors.white54),
                           ),
-
                           SizedBox(height: 30.h),
-
-                          /* 
-                           * HINT CARD 
-                           */
                           _buildDynamicGlassBox(
                             isDark: isDark,
                             child: Column(
@@ -425,12 +388,7 @@ class _GamePageState extends State<GamePage> {
                               ],
                             ),
                           ),
-
                           SizedBox(height: 30.h),
-
-                          /* 
-                           * DROP ZONE (Target) 
-                           */
                           Container(
                             constraints: BoxConstraints(minHeight: 140.h),
                             width: double.infinity,
@@ -474,13 +432,11 @@ class _GamePageState extends State<GamePage> {
                                     runSpacing: 10.h,
                                     crossAxisAlignment:
                                         WrapCrossAlignment.center,
-                                    alignment:
-                                        WrapAlignment.center, // Center chips
+                                    alignment: WrapAlignment.center,
                                     children: _selectedWords.map((word) {
                                       return _buildWordChip(
                                         word: word,
                                         onTap: () => _unselectWord(word),
-                                        // Selected State Style
                                         color: AppTheme.accentBlue,
                                         textColor: Colors.white,
                                         elevation: 4,
@@ -490,12 +446,7 @@ class _GamePageState extends State<GamePage> {
                                     }).toList(),
                                   ),
                           ),
-
                           SizedBox(height: 40.h),
-
-                          /* 
-                           * WORD BANK (Source) 
-                           */
                           Wrap(
                             alignment: WrapAlignment.center,
                             spacing: 12.w,
@@ -504,7 +455,6 @@ class _GamePageState extends State<GamePage> {
                               return _buildWordChip(
                                 word: word,
                                 onTap: () => _selectWord(word),
-                                // Default State Style
                                 color: isDark
                                     ? Colors.white.withOpacity(0.1)
                                     : Colors.white,
@@ -519,8 +469,7 @@ class _GamePageState extends State<GamePage> {
                                   .slideY(begin: 0.2, end: 0, duration: 400.ms);
                             }).toList(),
                           ),
-
-                          SizedBox(height: 100.h), // Space for bottom button
+                          SizedBox(height: 100.h),
                         ],
                       ),
                     ),
@@ -528,10 +477,6 @@ class _GamePageState extends State<GamePage> {
                 ],
               ),
             ),
-
-            /* 
-              * BOTTOM ACTION BUTTON (Floating)
-              */
             Positioned(
               bottom: 30.h,
               left: 24.w,
@@ -550,7 +495,6 @@ class _GamePageState extends State<GamePage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Glass Back Button
           GestureDetector(
             onTap: () => Navigator.pop(context),
             child: Container(
@@ -567,8 +511,6 @@ class _GamePageState extends State<GamePage> {
                   color: isDark ? Colors.white : Colors.black87, size: 20.w),
             ),
           ),
-
-          // Title with Glow
           Column(
             children: [
               Text(
@@ -598,8 +540,6 @@ class _GamePageState extends State<GamePage> {
               )
             ],
           ),
-
-          // Coin Display
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
             decoration: BoxDecoration(
@@ -652,7 +592,6 @@ class _GamePageState extends State<GamePage> {
         ),
       ).animate().scale(begin: const Offset(0.9, 0.9));
     } else {
-      // "Check" button
       final bool isEnabled = _selectedWords.isNotEmpty;
       return ElevatedButton(
         onPressed: isEnabled ? _checkSentence : null,
@@ -712,7 +651,6 @@ class _GamePageState extends State<GamePage> {
   }
 
   Widget _buildDynamicGlassBox({required Widget child, required bool isDark}) {
-    // Replaces GlassmorphicContainer with a flexible standard implementation
     return ClipRRect(
       borderRadius: BorderRadius.circular(24.r),
       child: BackdropFilter(
@@ -748,7 +686,6 @@ class _GamePageState extends State<GamePage> {
   Widget _buildBackgroundAuroras(bool isDark) {
     return Stack(
       children: [
-        // Top Right Glow
         Positioned(
           top: -100.h,
           right: -100.w,
@@ -770,7 +707,6 @@ class _GamePageState extends State<GamePage> {
               .animate(onPlay: (controller) => controller.repeat(reverse: true))
               .moveY(begin: 0, end: 50.h, duration: 5.seconds),
         ),
-        // Bottom Left Glow
         Positioned(
           bottom: -50.h,
           left: -100.w,
@@ -792,49 +728,14 @@ class _GamePageState extends State<GamePage> {
               .animate(onPlay: (controller) => controller.repeat(reverse: true))
               .moveX(begin: 0, end: 50.w, duration: 7.seconds),
         ),
-        // Additional Floating Element 1 (Top Left)
         Positioned(
           top: 80.h,
           left: 40.w,
           child: Icon(Icons.star_rounded,
                   color: Colors.white.withOpacity(isDark ? 0.05 : 0.1),
-                  size: 40.w)
-              .animate(onPlay: (c) => c.repeat(reverse: true))
-              .scale(
-                  begin: const Offset(1, 1),
-                  end: const Offset(1.5, 1.5),
-                  duration: 4.seconds)
-              .rotate(begin: 0, end: 0.1, duration: 5.seconds),
-        ),
-        // Additional Floating Element 2 (Right Middle)
-        Positioned(
-          top: 300.h,
-          right: 20.w,
-          child: Container(
-            width: 20.w,
-            height: 20.w,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withOpacity(isDark ? 0.05 : 0.2),
-            ),
-          )
-              .animate(onPlay: (c) => c.repeat(reverse: true))
-              .moveY(begin: 0, end: 30.h, duration: 6.seconds),
-        ),
-        // Additional Floating Element 3 (Bottom Center)
-        Positioned(
-          bottom: 150.h,
-          left: 150.w,
-          child: Icon(Icons.auto_awesome,
-                  color:
-                      AppTheme.primaryYellow.withOpacity(isDark ? 0.05 : 0.15),
-                  size: 60.w)
-              .animate(onPlay: (c) => c.repeat(reverse: true))
-              .fadeIn(duration: 2.seconds)
-              .scale(
-                  begin: const Offset(0.8, 0.8),
-                  end: const Offset(1.2, 1.2),
-                  duration: 3.seconds),
+                  size: 40)
+              .animate(onPlay: (controller) => controller.repeat(reverse: true))
+              .scale(begin: const Offset(1, 1), end: const Offset(1.5, 1.5)),
         ),
       ],
     );

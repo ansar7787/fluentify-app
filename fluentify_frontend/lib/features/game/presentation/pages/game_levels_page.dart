@@ -3,13 +3,18 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';
-import '../../../../config/theme/app_theme.dart';
-import '../../domain/models/game_model.dart';
-import 'game_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../config/theme/app_theme.dart';
+import '../../../../core/di/service_locator.dart';
+import '../../domain/entities/scramble_level_entity.dart';
+import '../bloc/game_bloc.dart';
+import '../bloc/game_event.dart';
+import '../bloc/game_state.dart';
 import '../../../user/presentation/bloc/user_bloc.dart';
 import '../../../user/presentation/bloc/user_event.dart';
 import '../../../user/presentation/bloc/user_state.dart';
+import 'game_page.dart';
 
 class GameLevelsPage extends StatefulWidget {
   const GameLevelsPage({super.key});
@@ -44,12 +49,9 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
   Future<void> _updateProgress(int completedLevel) async {
     if (completedLevel >= _highestUnlockedLevel) {
       final newLevel = completedLevel + 1;
-
-      // 1. Update Local (SharedPreferences as fallback)
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt('game_highest_level', newLevel);
 
-      // 2. Update Backend via UserBloc
       if (mounted) {
         context
             .read<UserBloc>()
@@ -64,97 +66,115 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final levels = GameLevel.getLevels();
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: Text('Sentence Master',
-            style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 22.sp,
-                shadows: [
-                  Shadow(
-                      color: Colors.black.withOpacity(0.3),
-                      offset: const Offset(0, 2),
-                      blurRadius: 4)
-                ])),
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        leading: GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: Container(
-            margin: EdgeInsets.all(8.w),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withOpacity(0.3)),
-            ),
-            child: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-          ),
-        ),
-        flexibleSpace: ClipRRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(color: Colors.transparent),
-          ),
-        ),
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: isDark
-                ? [
-                    const Color(0xFF1E1B4B), // Deep Indigo
-                    const Color(0xFF4C1D95), // Deep Violet
-                    const Color(0xFF0F172A), // Slate
-                  ]
-                : [
-                    const Color(0xFF4F46E5), // Indigo 600
-                    const Color(0xFF818CF8), // Indigo 400
-                    const Color(0xFFE0E7FF), // Indigo 50
-                  ],
-          ),
-        ),
-        child: Stack(
-          children: [
-            // Background Elements using defined method
-            _buildBackgroundAuroras(isDark),
-
-            // Content
-            SafeArea(
-              child: Column(
-                children: [
-                  _buildHeader(isDark),
-                  Expanded(
-                    child: GridView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 20.h),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        crossAxisSpacing: 20.w,
-                        mainAxisSpacing: 24.h,
-                        childAspectRatio: 0.75, // Taller cards
-                      ),
-                      itemCount: levels.length,
-                      itemBuilder: (context, index) {
-                        final level = levels[index];
-                        final isUnlocked = index < _highestUnlockedLevel;
-                        final isCurrent = level.level == _highestUnlockedLevel;
-                        return _buildLevelCard(
-                            level, isUnlocked, isCurrent, isDark);
-                      },
-                    ),
-                  ),
-                ],
+    return BlocProvider(
+      create: (context) => getIt<GameBloc>()..add(GetScrambleLevelsEvent()),
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          title: Text('Sentence Master',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 22.sp,
+                  shadows: [
+                    Shadow(
+                        color: Colors.black.withOpacity(0.3),
+                        offset: const Offset(0, 2),
+                        blurRadius: 4)
+                  ])),
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: true,
+          leading: GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              margin: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white.withOpacity(0.3)),
               ),
+              child: const Icon(Icons.arrow_back_rounded, color: Colors.white),
             ),
-          ],
+          ),
+          flexibleSpace: ClipRRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+        ),
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: isDark
+                  ? [
+                      const Color(0xFF1E1B4B), // Deep Indigo
+                      const Color(0xFF4C1D95), // Deep Violet
+                      const Color(0xFF0F172A), // Slate
+                    ]
+                  : [
+                      const Color(0xFF4F46E5), // Indigo 600
+                      const Color(0xFF818CF8), // Indigo 400
+                      const Color(0xFFE0E7FF), // Indigo 50
+                    ],
+            ),
+          ),
+          child: Stack(
+            children: [
+              _buildBackgroundAuroras(isDark),
+              SafeArea(
+                child: Column(
+                  children: [
+                    _buildHeader(isDark),
+                    Expanded(
+                      child: BlocBuilder<GameBloc, GameState>(
+                        builder: (context, state) {
+                          if (state is GameLoading) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          } else if (state is ScrambleLevelsLoaded) {
+                            return GridView.builder(
+                              physics: const BouncingScrollPhysics(),
+                              padding:
+                                  EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 20.h),
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                crossAxisSpacing: 20.w,
+                                mainAxisSpacing: 24.h,
+                                childAspectRatio: 0.75, // Taller cards
+                              ),
+                              itemCount: state.levels.length,
+                              itemBuilder: (context, index) {
+                                final level = state.levels[index];
+                                final isUnlocked = index <
+                                    _highestUnlockedLevel; // Logic check: index 0 is lvl 1. if highest=1, index 0 is unlocked. correct.
+                                final isCurrent =
+                                    level.level == _highestUnlockedLevel;
+                                return _buildLevelCard(
+                                    level, isUnlocked, isCurrent, isDark);
+                              },
+                            );
+                          } else if (state is GameError) {
+                            return Center(
+                                child: Text(state.message,
+                                    style:
+                                        const TextStyle(color: Colors.white)));
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -225,7 +245,7 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
   }
 
   Widget _buildLevelCard(
-      GameLevel level, bool isUnlocked, bool isCurrent, bool isDark) {
+      ScrambleLevelEntity level, bool isUnlocked, bool isCurrent, bool isDark) {
     return GestureDetector(
       onTap: () {
         if (isUnlocked) {

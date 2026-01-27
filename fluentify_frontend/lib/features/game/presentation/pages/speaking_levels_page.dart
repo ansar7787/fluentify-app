@@ -3,12 +3,17 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';
-import '../../domain/models/speaking_challenge.dart';
-import 'speaking_game_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../core/di/service_locator.dart';
+import '../../domain/entities/speaking_level_entity.dart';
+import '../bloc/game_bloc.dart';
+import '../bloc/game_event.dart';
+import '../bloc/game_state.dart';
 import '../../../user/presentation/bloc/user_bloc.dart';
 import '../../../user/presentation/bloc/user_event.dart';
 import '../../../user/presentation/bloc/user_state.dart';
+import 'speaking_game_page.dart';
 
 class SpeakingLevelsPage extends StatefulWidget {
   const SpeakingLevelsPage({super.key});
@@ -60,38 +65,61 @@ class _SpeakingLevelsPageState extends State<SpeakingLevelsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final levels = SpeakingLevel.getLevels();
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF050505) : Colors.white,
-      body: Stack(
-        children: [
-          _buildNeonBackground(isDark),
-          SafeArea(
-            child: Column(
-              children: [
-                _buildAppBar(context, isDark),
-                Expanded(
-                  child: ListView.builder(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 24.w, vertical: 30.h),
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: levels.length,
-                    itemBuilder: (context, index) {
-                      final level = levels[index];
-                      final isUnlocked = level.level <= _highestUnlockedLevel;
-                      final isCurrent = level.level == _highestUnlockedLevel;
-                      return _buildStageCard(
-                          level, isUnlocked, isCurrent, isDark);
-                    },
+    return BlocProvider(
+      create: (context) => getIt<GameBloc>()..add(GetSpeakingLevelsEvent()),
+      child: Scaffold(
+        backgroundColor: isDark ? const Color(0xFF050505) : Colors.white,
+        body: Stack(
+          children: [
+            _buildNeonBackground(isDark),
+            SafeArea(
+              child: Column(
+                children: [
+                  _buildAppBar(context, isDark),
+                  Expanded(
+                    child: BlocBuilder<GameBloc, GameState>(
+                      builder: (context, state) {
+                        if (state is GameLoading) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        } else if (state is SpeakingLevelsLoaded) {
+                          return _buildLevelsList(state.levels, isDark);
+                        } else if (state is GameError) {
+                          return Center(
+                            child: Text(
+                              state.message,
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black,
+                              ),
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildLevelsList(List<SpeakingLevelEntity> levels, bool isDark) {
+    return ListView.builder(
+      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 30.h),
+      physics: const BouncingScrollPhysics(),
+      itemCount: levels.length,
+      itemBuilder: (context, index) {
+        final level = levels[index];
+        final isUnlocked = level.level <= _highestUnlockedLevel;
+        final isCurrent = level.level == _highestUnlockedLevel;
+        return _buildStageCard(level, isUnlocked, isCurrent, isDark);
+      },
     );
   }
 
@@ -151,7 +179,7 @@ class _SpeakingLevelsPageState extends State<SpeakingLevelsPage> {
   }
 
   Widget _buildStageCard(
-      SpeakingLevel level, bool isUnlocked, bool isCurrent, bool isDark) {
+      SpeakingLevelEntity level, bool isUnlocked, bool isCurrent, bool isDark) {
     return Container(
       margin: EdgeInsets.only(bottom: 24.h),
       child: GestureDetector(
@@ -160,9 +188,12 @@ class _SpeakingLevelsPageState extends State<SpeakingLevelsPage> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => SpeakingGamePage(level: level),
+                builder: (context) => SpeakingGamePage(
+                  level: level,
+                  onLevelComplete: () => _updateProgress(level.level),
+                ),
               ),
-            ).then((_) => _updateProgress(level.level));
+            );
           }
         },
         child: Container(
@@ -173,8 +204,8 @@ class _SpeakingLevelsPageState extends State<SpeakingLevelsPage> {
                     ? const Color(0xFF10B981)
                     : (isDark ? Colors.white.withOpacity(0.05) : Colors.white))
                 : (isDark
-                    ? Colors.white.withValues(alpha: 0.02)
-                    : Colors.black.withValues(alpha: 0.05)),
+                    ? Colors.white.withOpacity(0.02)
+                    : Colors.black.withOpacity(0.05)),
             borderRadius: BorderRadius.circular(30.r),
             border: Border.all(
               color: isCurrent
@@ -252,11 +283,7 @@ class _SpeakingLevelsPageState extends State<SpeakingLevelsPage> {
                               ),
                             ),
                             Text(
-                              level.level > 70
-                                  ? 'Advanced Fluency'
-                                  : (level.level > 30
-                                      ? 'Skill Talk'
-                                      : 'Intro Mastery'),
+                              level.title, // Use title from entity
                               style: TextStyle(
                                 fontSize: 20.sp,
                                 fontWeight: FontWeight.bold,
@@ -295,7 +322,7 @@ class _SpeakingLevelsPageState extends State<SpeakingLevelsPage> {
       children: [
         Positioned(
           top: 200.h,
-          left: -100.w,
+          right: -100.w,
           child: Container(
             width: 300.w,
             height: 300.h,

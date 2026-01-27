@@ -3,12 +3,17 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';
-import '../../domain/models/grammar_challenge.dart';
-import 'grammar_game_page.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../core/di/service_locator.dart';
+import '../../domain/entities/grammar_level_entity.dart';
+import '../bloc/game_bloc.dart';
+import '../bloc/game_event.dart';
+import '../bloc/game_state.dart';
 import '../../../user/presentation/bloc/user_bloc.dart';
 import '../../../user/presentation/bloc/user_event.dart';
 import '../../../user/presentation/bloc/user_state.dart';
+import 'grammar_game_page.dart';
 
 class GrammarLevelsPage extends StatefulWidget {
   const GrammarLevelsPage({super.key});
@@ -60,40 +65,64 @@ class _GrammarLevelsPageState extends State<GrammarLevelsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final levels = GrammarLevel.getLevels();
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      backgroundColor:
-          isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-      body: Stack(
-        children: [
-          _buildCircuitBackground(isDark),
-          SafeArea(
-            child: Column(
-              children: [
-                _buildAppBar(context, isDark),
-                _buildProgressHeader(isDark),
-                Expanded(
-                  child: ListView.builder(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: levels.length,
-                    itemBuilder: (context, index) {
-                      final level = levels[index];
-                      final isUnlocked = level.level <= _highestUnlockedLevel;
-                      final isCurrent = level.level == _highestUnlockedLevel;
-                      return _buildLevelNode(level, isUnlocked, isCurrent,
-                          isDark, index == levels.length - 1);
-                    },
+    return BlocProvider(
+      create: (context) => getIt<GameBloc>()..add(GetGrammarLevelsEvent()),
+      child: Scaffold(
+        backgroundColor:
+            isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        body: Stack(
+          children: [
+            _buildCircuitBackground(isDark),
+            SafeArea(
+              child: Column(
+                children: [
+                  _buildAppBar(context, isDark),
+                  _buildProgressHeader(isDark),
+                  Expanded(
+                    child: BlocBuilder<GameBloc, GameState>(
+                      builder: (context, state) {
+                        if (state is GameLoading) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        } else if (state is GrammarLevelsLoaded) {
+                          return _buildLevelsList(state.levels, isDark);
+                        } else if (state is GameError) {
+                          return Center(
+                            child: Text(
+                              state.message,
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black,
+                              ),
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildLevelsList(List<GrammarLevelEntity> levels, bool isDark) {
+    return ListView.builder(
+      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
+      physics: const BouncingScrollPhysics(),
+      itemCount: levels.length,
+      itemBuilder: (context, index) {
+        final level = levels[index];
+        final isUnlocked = level.level <= _highestUnlockedLevel;
+        final isCurrent = level.level == _highestUnlockedLevel;
+        return _buildLevelNode(
+            level, isUnlocked, isCurrent, isDark, index == levels.length - 1);
+      },
     );
   }
 
@@ -171,8 +200,8 @@ class _GrammarLevelsPageState extends State<GrammarLevelsPage> {
     );
   }
 
-  Widget _buildLevelNode(GrammarLevel level, bool isUnlocked, bool isCurrent,
-      bool isDark, bool isLast) {
+  Widget _buildLevelNode(GrammarLevelEntity level, bool isUnlocked,
+      bool isCurrent, bool isDark, bool isLast) {
     return Column(
       children: [
         GestureDetector(
@@ -181,19 +210,16 @@ class _GrammarLevelsPageState extends State<GrammarLevelsPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => GrammarGamePage(level: level),
+                  builder: (context) => GrammarGamePage(
+                    level: level,
+                    onLevelComplete: () => _updateProgress(level.level),
+                  ),
                 ),
-              ).then((_) {
-                // For now, GrammarGamePage doesn't have a direct "complete" callback for the whole level,
-                // but we can trigger progress update if they finish all questions.
-                // Let's assume for this specific flow they unlock the NEXT level on finishing current game session.
-                _updateProgress(level.level);
-              });
+              );
             }
           },
           child: Row(
             children: [
-              // Node
               AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 width: 60.w,
@@ -235,7 +261,6 @@ class _GrammarLevelsPageState extends State<GrammarLevelsPage> {
                 ),
               ),
               SizedBox(width: 20.w),
-              // Content
               Expanded(
                 child: Container(
                   padding: EdgeInsets.all(16.w),
@@ -266,11 +291,7 @@ class _GrammarLevelsPageState extends State<GrammarLevelsPage> {
                         ),
                       ),
                       Text(
-                        level.level > 70
-                            ? 'Advanced Grammar'
-                            : (level.level > 30
-                                ? 'Intermediate Grammar'
-                                : 'Survival Grammar'),
+                        level.title, // Use title from entity
                         style: TextStyle(
                           color: isUnlocked
                               ? (isDark ? Colors.white : Colors.black87)
@@ -290,7 +311,7 @@ class _GrammarLevelsPageState extends State<GrammarLevelsPage> {
           Container(
             height: 40.h,
             width: 2,
-            margin: EdgeInsets.only(left: 29.w), // Half of 60 - half of 2
+            margin: EdgeInsets.only(left: 29.w),
             color: isUnlocked
                 ? const Color(0xFF8B5CF6).withOpacity(0.3)
                 : (isDark ? Colors.white10 : Colors.black12),

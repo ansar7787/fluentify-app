@@ -3,25 +3,33 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:ui';
 import '../../../../config/theme/app_theme.dart';
-import '../../domain/models/grammar_challenge.dart';
+import '../../domain/entities/grammar_level_entity.dart'; // Updated import
+import '../../domain/entities/grammar_challenge_entity.dart'; // Updated import
 import '../../../../core/di/service_locator.dart';
 import '../../../../features/user/domain/repositories/user_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class GrammarGamePage extends StatefulWidget {
-  final GrammarLevel level;
-  const GrammarGamePage({super.key, required this.level});
+  final GrammarLevelEntity level; // Updated type
+  final VoidCallback onLevelComplete;
+
+  const GrammarGamePage({
+    super.key,
+    required this.level,
+    required this.onLevelComplete,
+  });
 
   @override
   State<GrammarGamePage> createState() => _GrammarGamePageState();
 }
 
 class _GrammarGamePageState extends State<GrammarGamePage> {
-  late List<GrammarChallenge> _challenges;
+  late List<GrammarChallengeEntity> _challenges; // Updated type
   int _currentIndex = 0;
   int? _selectedIndex;
   bool? _isCorrect;
   int _coins = 0;
+  bool _levelHadMistakes = false;
 
   @override
   void initState() {
@@ -68,7 +76,7 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
   }
 
   void _checkAnswer(int index) {
-    if (_isCorrect != null) return;
+    if (_isCorrect != null && _isCorrect!) return;
 
     setState(() {
       _selectedIndex = index;
@@ -78,24 +86,31 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
     if (_isCorrect!) {
       _addCoins(15);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Correct! +15 Coins'),
+        const SnackBar(
+          content: Text('Correct! +15 Coins'),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 1),
+          duration: Duration(seconds: 1),
         ),
       );
     } else {
+      _levelHadMistakes = true;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              'Wrong. Correct: ${_challenges[_currentIndex].options[_challenges[_currentIndex].correctOptionIndex]}'),
+        const SnackBar(
+          content: Text('Not quite right. Try again!'),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 2),
+          duration: Duration(seconds: 1),
         ),
       );
     }
+  }
+
+  void _retryChallenge() {
+    setState(() {
+      _selectedIndex = null;
+      _isCorrect = null;
+    });
   }
 
   void _nextChallenge() {
@@ -111,6 +126,13 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
   }
 
   void _showCompletionDialog() {
+    // Determine title and message based on performance
+    String title =
+        _levelHadMistakes ? 'Level Completed!' : 'Perfect Performance!';
+    String message = _levelHadMistakes
+        ? 'Great job finishing level ${widget.level.level}.'
+        : 'You mastered level ${widget.level.level} without any mistakes!';
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -120,18 +142,18 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
           backgroundColor: Colors.white.withOpacity(0.1),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.r)),
-          title: Text('Quest Complete!',
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          content: Text('You mastered level ${widget.level.level}!',
-              style: TextStyle(color: Colors.white70)),
+          title: Text(title,
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.bold)),
+          content: Text(message, style: const TextStyle(color: Colors.white70)),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context); // Dialog
+                widget.onLevelComplete();
                 Navigator.pop(context); // Page
               },
-              child: const Text('Great!',
+              child: const Text('Continue',
                   style: TextStyle(color: AppTheme.primaryYellow)),
             ),
           ],
@@ -203,10 +225,13 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
                     const Spacer(),
                     if (_isCorrect != null)
                       ElevatedButton(
-                        onPressed: _nextChallenge,
+                        onPressed:
+                            _isCorrect! ? _nextChallenge : _retryChallenge,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryYellow,
-                          foregroundColor: Colors.black,
+                          backgroundColor: _isCorrect!
+                              ? AppTheme.primaryYellow
+                              : Colors.redAccent,
+                          foregroundColor: Colors.white,
                           padding: EdgeInsets.symmetric(vertical: 16.h),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20.r)),
@@ -214,10 +239,16 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text('Continue',
-                                style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(_isCorrect! ? 'Continue' : 'Try Again',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black)),
                             SizedBox(width: 8.w),
-                            const Icon(Icons.arrow_forward),
+                            Icon(
+                                _isCorrect!
+                                    ? Icons.arrow_forward
+                                    : Icons.refresh,
+                                color: Colors.black),
                           ],
                         ),
                       ).animate().scale().fadeIn(),
@@ -239,9 +270,9 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Question ${_currentIndex + 1}',
-                style: TextStyle(color: Colors.white70, fontSize: 12.sp)),
+                style: const TextStyle(color: Colors.white70, fontSize: 12)),
             Text('${_challenges.length}',
-                style: TextStyle(color: Colors.white38, fontSize: 12.sp)),
+                style: const TextStyle(color: Colors.white38, fontSize: 12)),
           ],
         ),
         SizedBox(height: 8.h),
@@ -259,7 +290,7 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
     );
   }
 
-  Widget _buildQuestionCard(bool isDark, GrammarChallenge challenge) {
+  Widget _buildQuestionCard(bool isDark, GrammarChallengeEntity challenge) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(30.w),
@@ -270,7 +301,7 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
         borderRadius: BorderRadius.circular(30.r),
         border: Border.all(color: Colors.white.withOpacity(0.2)),
         boxShadow: [
-          BoxShadow(
+          const BoxShadow(
               color: Colors.black12, blurRadius: 20, offset: Offset(0, 10))
         ],
       ),
@@ -290,15 +321,15 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
               height: 1.5,
             ),
           ),
-          if (_isCorrect != null)
+          if (_isCorrect != null && _isCorrect!)
             Padding(
               padding: EdgeInsets.only(top: 20.h),
               child: Text(
                 challenge.explanation,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                     color: AppTheme.secondaryGreen,
-                    fontSize: 14.sp,
+                    fontSize: 14,
                     fontStyle: FontStyle.italic),
               ).animate().fadeIn(),
             ),
@@ -307,7 +338,7 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
     );
   }
 
-  Widget _buildOptionsGrid(bool isDark, GrammarChallenge challenge) {
+  Widget _buildOptionsGrid(bool isDark, GrammarChallengeEntity challenge) {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -324,9 +355,11 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
 
         Color cardColor = isDark ? Colors.white.withOpacity(0.1) : Colors.white;
         if (_isCorrect != null) {
-          if (isCorrectChoice)
+          if (isCorrectChoice) {
             cardColor = Colors.green.withOpacity(0.2);
-          else if (isSelected) cardColor = Colors.red.withOpacity(0.2);
+          } else if (isSelected) {
+            cardColor = Colors.red.withOpacity(0.2);
+          }
         } else if (isSelected) {
           cardColor = AppTheme.accentBlue.withOpacity(0.3);
         }
