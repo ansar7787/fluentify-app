@@ -1,13 +1,7 @@
-import 'dart:io';
-
 class AppConstants {
   static const String appName = 'Fluentify';
   static String get apiBaseUrl {
-    if (Platform.isAndroid) {
-      // Using Tunnelmole for password-free public access
-      return 'https://0j8pzg-ip-202-122-23-236.tunnelmole.net';
-    }
-    return 'http://localhost:3000';
+    return 'https://fluentify-app.vercel.app';
   }
 
   // Storage Keys
