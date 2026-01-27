@@ -62,6 +62,12 @@ export class User {
     @Column({ default: 1 })
     gameLevel: number;
 
+    @Column({ default: 1 })
+    grammarLevel: number;
+
+    @Column({ default: 1 })
+    speakingLevel: number;
+
     @Column({ type: 'timestamp', nullable: true })
     lastPracticeDate?: Date;
 
