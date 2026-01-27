@@ -4,8 +4,8 @@ class AppConstants {
   static const String appName = 'Fluentify';
   static String get apiBaseUrl {
     if (Platform.isAndroid) {
-      // For Physical Device, use your computer's local IP
-      return 'http://192.168.1.45:3000';
+      // Using Tunnelmole for password-free public access
+      return 'https://mzjn9b-ip-202-122-23-201.tunnelmole.net';
     }
     return 'http://localhost:3000';
   }
