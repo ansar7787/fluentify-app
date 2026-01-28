@@ -59,12 +59,13 @@ class AdminDashboardPage extends StatelessWidget {
               SizedBox(height: 30.h),
               ElevatedButton(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                      content: Text("Feature under construction!")));
+                  Navigator.pushNamed(context, '/admin_level_editor');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryYellow,
                   foregroundColor: Colors.black,
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 32.w, vertical: 16.h),
                 ),
                 child: const Text("Open Level Editor"),
               )
