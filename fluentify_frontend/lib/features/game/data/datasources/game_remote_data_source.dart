@@ -42,7 +42,7 @@ class GameRemoteDataSourceImpl implements GameRemoteDataSource {
       return data.map((e) => mapper(e)).toList();
     } catch (e) {
       // If server fails or no data, rethrow to trigger fallback
-      throw e;
+      rethrow;
     }
   }
 

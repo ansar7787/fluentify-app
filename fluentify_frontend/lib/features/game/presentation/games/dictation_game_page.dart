@@ -150,8 +150,9 @@ class _DictationGamePageState extends State<DictationGamePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_currentChallengeIndex >= _challenges.length)
+    if (_currentChallengeIndex >= _challenges.length) {
       return const SizedBox.shrink();
+    }
     final challenge = _challenges[_currentChallengeIndex];
 
     return Scaffold(
@@ -190,7 +191,7 @@ class _DictationGamePageState extends State<DictationGamePage> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                          color: const Color(0xFF10B981).withOpacity(0.3),
+                          color: const Color(0xFF10B981).withValues(alpha: 0.3),
                           blurRadius: 20,
                           spreadRadius: 5)
                     ]),

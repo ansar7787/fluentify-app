@@ -1,23 +1,24 @@
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:flutter/foundation.dart';
+import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../constants/app_constants.dart';
 
 class ChatService {
-  late IO.Socket _socket;
+  late io.Socket _socket;
 
   // Initialize Socket
   void initSocket() {
-    _socket = IO.io(AppConstants.apiBaseUrl, <String, dynamic>{
+    _socket = io.io(AppConstants.apiBaseUrl, <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': false,
     });
     _socket.connect();
 
     _socket.onConnect((_) {
-      print('Connected to Socket');
+      debugPrint('Connected to Socket');
     });
 
     _socket.onDisconnect((_) {
-      print('Disconnected from Socket');
+      debugPrint('Disconnected from Socket');
     });
   }
 

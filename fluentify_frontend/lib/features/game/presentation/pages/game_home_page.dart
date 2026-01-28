@@ -46,7 +46,7 @@ class _GameHomePageState extends State<GameHomePage> {
               letterSpacing: 1.2,
               shadows: [
                 Shadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     offset: const Offset(0, 2),
                     blurRadius: 4)
               ]),
@@ -91,24 +91,24 @@ class _GameHomePageState extends State<GameHomePage> {
       ),
       bottomNavigationBar: NavigationBarTheme(
         data: NavigationBarThemeData(
-          labelTextStyle: MaterialStateProperty.all(TextStyle(
+          labelTextStyle: WidgetStateProperty.all(TextStyle(
               fontSize: 12.sp,
               fontWeight: FontWeight.w600,
               color: isDark ? Colors.white70 : Colors.black87)),
-          indicatorColor: const Color(0xFF8B5CF6).withOpacity(0.2),
-          iconTheme: MaterialStateProperty.all(IconThemeData(size: 24.sp)),
+          indicatorColor: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
+          iconTheme: WidgetStateProperty.all(IconThemeData(size: 24.sp)),
         ),
         child: NavigationBar(
           height: 70.h,
           elevation: 0,
           backgroundColor: isDark
-              ? const Color(0xFF0F172A).withOpacity(0.8)
-              : Colors.white.withOpacity(0.8),
+              ? const Color(0xFF0F172A).withValues(alpha: 0.8)
+              : Colors.white.withValues(alpha: 0.8),
           selectedIndex: _selectedIndex,
           onDestinationSelected: (index) {
             setState(() => _selectedIndex = index);
             if (index == 2) {
-              context.read<LeaderboardBloc>().add(GetLeaderboardEvent());
+              context.read<LeaderboardBloc>().add(const GetLeaderboardEvent());
             }
           },
           destinations: const [
@@ -272,12 +272,13 @@ class _GameHomePageState extends State<GameHomePage> {
               Container(
                 padding: EdgeInsets.all(20.w),
                 decoration: BoxDecoration(
-                    color:
-                        isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.white,
                     borderRadius: BorderRadius.circular(20.r),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       )
@@ -323,16 +324,16 @@ class _GameHomePageState extends State<GameHomePage> {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
         ],
-        border: Border.all(color: color.withOpacity(0.1)),
+        border: Border.all(color: color.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -340,7 +341,7 @@ class _GameHomePageState extends State<GameHomePage> {
           Container(
             padding: EdgeInsets.all(10.w),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(icon, color: color, size: 24.w),
@@ -395,7 +396,7 @@ class _GameHomePageState extends State<GameHomePage> {
                 TextButton(
                   onPressed: () => context
                       .read<LeaderboardBloc>()
-                      .add(GetLeaderboardEvent()),
+                      .add(const GetLeaderboardEvent()),
                   child: const Text("Retry"),
                 )
               ],
@@ -409,22 +410,25 @@ class _GameHomePageState extends State<GameHomePage> {
 
   Widget _buildLeaderboardItem(UserEntity user, int rank, bool isDark) {
     Color rankColor;
-    if (rank == 1)
+    if (rank == 1) {
       rankColor = Colors.amber;
-    else if (rank == 2)
+    } else if (rank == 2) {
       rankColor = Colors.grey.shade400;
-    else if (rank == 3)
+    } else if (rank == 3) {
       rankColor = Colors.brown.shade400;
-    else
+    } else {
       rankColor = isDark ? Colors.white30 : Colors.black26;
+    }
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
-          color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: rank <= 3 ? rankColor.withOpacity(0.5) : Colors.transparent,
+            color: rank <= 3
+                ? rankColor.withValues(alpha: 0.5)
+                : Colors.transparent,
           )),
       child: Row(
         children: [
@@ -434,8 +438,9 @@ class _GameHomePageState extends State<GameHomePage> {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color:
-                  rank <= 3 ? rankColor.withOpacity(0.1) : Colors.transparent,
+              color: rank <= 3
+                  ? rankColor.withValues(alpha: 0.1)
+                  : Colors.transparent,
             ),
             child: Text(
               "#$rank",
@@ -482,7 +487,7 @@ class _GameHomePageState extends State<GameHomePage> {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
             decoration: BoxDecoration(
-              color: Colors.amber.withOpacity(0.1),
+              color: Colors.amber.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Row(
@@ -519,14 +524,14 @@ class _GameHomePageState extends State<GameHomePage> {
         height: 140.h,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24.r),
-          color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
           border: Border.all(
-            color: isDark ? Colors.white.withOpacity(0.1) : Colors.white,
+            color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white,
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: game.color.withOpacity(0.3),
+              color: game.color.withValues(alpha: 0.3),
               blurRadius: 20,
               offset: const Offset(0, 8),
               spreadRadius: -5,
@@ -545,7 +550,7 @@ class _GameHomePageState extends State<GameHomePage> {
                   width: 150.w,
                   height: 150.h,
                   decoration: BoxDecoration(
-                    color: game.color.withOpacity(0.1),
+                    color: game.color.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -558,9 +563,10 @@ class _GameHomePageState extends State<GameHomePage> {
                     Container(
                       padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
-                        color: game.color.withOpacity(0.2),
+                        color: game.color.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20.r),
-                        border: Border.all(color: game.color.withOpacity(0.3)),
+                        border: Border.all(
+                            color: game.color.withValues(alpha: 0.3)),
                       ),
                       child: Icon(game.icon, color: game.color, size: 32.w),
                     ),
@@ -625,7 +631,7 @@ class _GameHomePageState extends State<GameHomePage> {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.blue.withOpacity(0.05),
+                  color: Colors.blue.withValues(alpha: 0.05),
                   blurRadius: 50,
                   spreadRadius: 20,
                 )

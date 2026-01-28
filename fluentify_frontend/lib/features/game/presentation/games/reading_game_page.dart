@@ -102,8 +102,9 @@ class _ReadingGamePageState extends State<ReadingGamePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_currentChallengeIndex >= _challenges.length)
+    if (_currentChallengeIndex >= _challenges.length) {
       return const SizedBox.shrink();
+    }
     final challenge = _challenges[_currentChallengeIndex];
 
     return Scaffold(
@@ -127,7 +128,7 @@ class _ReadingGamePageState extends State<ReadingGamePage> {
                   border: Border.all(color: Colors.amber.shade200),
                   boxShadow: [
                     BoxShadow(
-                        color: Colors.amber.withOpacity(0.1),
+                        color: Colors.amber.withValues(alpha: 0.1),
                         blurRadius: 10,
                         offset: const Offset(0, 4))
                   ]),

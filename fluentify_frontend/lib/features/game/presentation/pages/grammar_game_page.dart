@@ -76,7 +76,9 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
   }
 
   void _checkAnswer(int index) {
-    if (_isCorrect != null && _isCorrect!) return;
+    if (_isCorrect != null && _isCorrect!) {
+      return;
+    }
 
     setState(() {
       _selectedIndex = index;
@@ -139,7 +141,7 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
       builder: (context) => BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: AlertDialog(
-          backgroundColor: Colors.white.withOpacity(0.1),
+          backgroundColor: Colors.white.withValues(alpha: 0.1),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.r)),
           title: Text(title,
@@ -296,12 +298,12 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
       padding: EdgeInsets.all(30.w),
       decoration: BoxDecoration(
         color: isDark
-            ? Colors.white.withOpacity(0.05)
-            : Colors.white.withOpacity(0.7),
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.white.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(30.r),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
-        boxShadow: [
-          const BoxShadow(
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+        boxShadow: const [
+          BoxShadow(
               color: Colors.black12, blurRadius: 20, offset: Offset(0, 10))
         ],
       ),
@@ -353,15 +355,16 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
         bool isSelected = _selectedIndex == index;
         bool isCorrectChoice = index == challenge.correctOptionIndex;
 
-        Color cardColor = isDark ? Colors.white.withOpacity(0.1) : Colors.white;
+        Color cardColor =
+            isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white;
         if (_isCorrect != null) {
           if (isCorrectChoice) {
-            cardColor = Colors.green.withOpacity(0.2);
+            cardColor = Colors.green.withValues(alpha: 0.2);
           } else if (isSelected) {
-            cardColor = Colors.red.withOpacity(0.2);
+            cardColor = Colors.red.withValues(alpha: 0.2);
           }
         } else if (isSelected) {
-          cardColor = AppTheme.accentBlue.withOpacity(0.3);
+          cardColor = AppTheme.accentBlue.withValues(alpha: 0.3);
         }
 
         return GestureDetector(
@@ -408,10 +411,10 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
             height: 300.h,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppTheme.accentBlue.withOpacity(0.15),
+              color: AppTheme.accentBlue.withValues(alpha: 0.15),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.accentBlue.withOpacity(0.15),
+                  color: AppTheme.accentBlue.withValues(alpha: 0.15),
                   blurRadius: 100,
                 )
               ],
@@ -426,10 +429,10 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
             height: 400.h,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppTheme.primaryYellow.withOpacity(0.1),
+              color: AppTheme.primaryYellow.withValues(alpha: 0.1),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.primaryYellow.withOpacity(0.1),
+                  color: AppTheme.primaryYellow.withValues(alpha: 0.1),
                   blurRadius: 120,
                 )
               ],

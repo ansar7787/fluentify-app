@@ -128,10 +128,11 @@ class _RapidFireGamePageState extends State<RapidFireGamePage>
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              if (success)
+              if (success) {
                 _nextChallenge();
-              else
+              } else {
                 _startChallenge(); // Retry
+              }
             },
             child: Text(success ? "Next" : "Retry",
                 style: const TextStyle(color: Colors.red)),
@@ -168,8 +169,9 @@ class _RapidFireGamePageState extends State<RapidFireGamePage>
 
   @override
   Widget build(BuildContext context) {
-    if (_currentChallengeIndex >= _challenges.length)
+    if (_currentChallengeIndex >= _challenges.length) {
       return const SizedBox.shrink();
+    }
     final challenge = _challenges[_currentChallengeIndex];
 
     return Scaffold(
@@ -190,7 +192,7 @@ class _RapidFireGamePageState extends State<RapidFireGamePage>
                     child: CircularProgressIndicator(
                       value: _timeLeft / _totalTime,
                       strokeWidth: 8.w,
-                      backgroundColor: Colors.red.withOpacity(0.1),
+                      backgroundColor: Colors.red.withValues(alpha: 0.1),
                       valueColor: const AlwaysStoppedAnimation(Colors.red),
                     ),
                   ),
@@ -240,7 +242,8 @@ class _RapidFireGamePageState extends State<RapidFireGamePage>
                       onPlay: (controller) =>
                           controller.repeat(reverse: true, period: 2000.ms))
                   .shimmer(
-                      duration: 1500.ms, color: Colors.red.withOpacity(0.1)),
+                      duration: 1500.ms,
+                      color: Colors.red.withValues(alpha: 0.1)),
 
               const SizedBox(height: 24),
               ElevatedButton(
@@ -250,7 +253,7 @@ class _RapidFireGamePageState extends State<RapidFireGamePage>
                   shape: const CircleBorder(),
                   padding: const EdgeInsets.all(24),
                   elevation: 10,
-                  shadowColor: Colors.red.withOpacity(0.5),
+                  shadowColor: Colors.red.withValues(alpha: 0.5),
                 ),
                 child: const Icon(Icons.arrow_forward,
                     size: 32, color: Colors.white),

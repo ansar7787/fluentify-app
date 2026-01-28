@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_animate/flutter_animate.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -9,8 +9,7 @@ import '../../domain/entities/typing_level_entity.dart';
 import '../bloc/game_bloc.dart';
 import '../bloc/game_event.dart';
 import '../bloc/game_state.dart';
-import '../../../user/presentation/bloc/user_bloc.dart';
-import '../../../user/presentation/bloc/user_state.dart';
+
 import '../games/typing_game_page.dart';
 
 class TypingLevelsPage extends StatefulWidget {
@@ -149,11 +148,11 @@ class _TypingLevelsPageState extends State<TypingLevelsPage> {
 
   Widget _buildProgressHeader(bool isDark, Color color) {
     return Container(
-      padding: EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       child: LinearProgressIndicator(
           value: _highestUnlockedLevel / 100,
           color: color,
-          backgroundColor: color.withOpacity(0.2)),
+          backgroundColor: color.withValues(alpha: 0.2)),
     );
   }
 

@@ -152,7 +152,7 @@ class _SessionsPageState extends State<SessionsPage>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.08),
+            color: Colors.grey.withValues(alpha: 0.08),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -165,7 +165,7 @@ class _SessionsPageState extends State<SessionsPage>
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             decoration: BoxDecoration(
               color: isUpcoming
-                  ? AppTheme.accentBlue.withOpacity(0.1)
+                  ? AppTheme.accentBlue.withValues(alpha: 0.1)
                   : Colors.grey[100],
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(20)),
@@ -215,13 +215,13 @@ class _SessionsPageState extends State<SessionsPage>
                 CircleAvatar(
                   radius: 28,
                   backgroundColor: Colors.grey[200],
+                  backgroundImage: session.mentorAvatar.isNotEmpty
+                      ? NetworkImage(session.mentorAvatar)
+                      : null,
                   child: session.mentorAvatar.isNotEmpty
                       ? null
                       : const Icon(Icons.person_rounded,
                           size: 32, color: Colors.grey),
-                  backgroundImage: session.mentorAvatar.isNotEmpty
-                      ? NetworkImage(session.mentorAvatar)
-                      : null,
                 ),
                 const SizedBox(width: 16),
 

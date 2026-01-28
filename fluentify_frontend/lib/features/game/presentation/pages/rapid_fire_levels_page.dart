@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/service_locator.dart';
-import '../../domain/entities/rapid_fire_level_entity.dart';
+
 import '../bloc/game_bloc.dart';
 import '../bloc/game_event.dart';
 import '../bloc/game_state.dart';
@@ -118,8 +117,8 @@ class _RapidFireLevelsPageState extends State<RapidFireLevelsPage> {
                                 boxShadow: isUnlocked
                                     ? [
                                         BoxShadow(
-                                            color:
-                                                Colors.black.withOpacity(0.2),
+                                            color: Colors.black
+                                                .withValues(alpha: 0.2),
                                             blurRadius: 10,
                                             offset: const Offset(0, 5))
                                       ]

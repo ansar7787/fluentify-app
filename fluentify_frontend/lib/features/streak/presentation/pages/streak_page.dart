@@ -102,7 +102,7 @@ class _StreakPageState extends State<StreakPage> {
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: Colors.orange.withOpacity(0.15),
+            color: Colors.orange.withValues(alpha: 0.15),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
@@ -110,10 +110,10 @@ class _StreakPageState extends State<StreakPage> {
       ),
       child: Column(
         children: [
-          Icon(
+          const Icon(
             Icons.local_fire_department_rounded,
             size: 80,
-            color: const Color(0xFFF97316),
+            color: Color(0xFFF97316),
           )
               .animate(onPlay: (c) => c.repeat())
               .shimmer(duration: 2.seconds, color: Colors.amber),
@@ -321,7 +321,7 @@ class _StreakPageState extends State<StreakPage> {
                           border: Border.all(color: Colors.white, width: 2),
                           boxShadow: [
                             BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
+                                color: Colors.black.withValues(alpha: 0.05),
                                 blurRadius: 4),
                           ]),
                     ),
@@ -339,11 +339,11 @@ class _StreakPageState extends State<StreakPage> {
                     borderRadius: BorderRadius.circular(16),
                     border: isToday
                         ? Border.all(
-                            color: AppTheme.accentBlue.withOpacity(0.3))
+                            color: AppTheme.accentBlue.withValues(alpha: 0.3))
                         : null,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.05),
+                        color: Colors.grey.withValues(alpha: 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),

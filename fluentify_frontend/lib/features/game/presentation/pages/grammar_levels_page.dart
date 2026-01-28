@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:ui';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/di/service_locator.dart';
@@ -155,13 +155,14 @@ class _GrammarLevelsPageState extends State<GrammarLevelsPage> {
       margin: EdgeInsets.symmetric(horizontal: 24.w, vertical: 10.h),
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
         borderRadius: BorderRadius.circular(24.r),
         border: Border.all(
-            color: isDark ? Colors.white12 : Colors.black.withOpacity(0.05)),
+            color:
+                isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
@@ -229,7 +230,7 @@ class _GrammarLevelsPageState extends State<GrammarLevelsPage> {
                   color: isUnlocked
                       ? (isCurrent
                           ? const Color(0xFF8B5CF6)
-                          : const Color(0xFF8B5CF6).withOpacity(0.2))
+                          : const Color(0xFF8B5CF6).withValues(alpha: 0.2))
                       : (isDark ? Colors.white10 : Colors.black12),
                   border: Border.all(
                     color: isCurrent
@@ -242,7 +243,8 @@ class _GrammarLevelsPageState extends State<GrammarLevelsPage> {
                   boxShadow: isCurrent
                       ? [
                           BoxShadow(
-                              color: const Color(0xFF8B5CF6).withOpacity(0.5),
+                              color: const Color(0xFF8B5CF6)
+                                  .withValues(alpha: 0.5),
                               blurRadius: 15,
                               spreadRadius: 2)
                         ]
@@ -267,13 +269,14 @@ class _GrammarLevelsPageState extends State<GrammarLevelsPage> {
                   decoration: BoxDecoration(
                     color: isUnlocked
                         ? (isDark
-                            ? Colors.white.withOpacity(0.05)
+                            ? Colors.white.withValues(alpha: 0.05)
                             : Colors.white)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(20.r),
                     border: isCurrent
                         ? Border.all(
-                            color: const Color(0xFF8B5CF6).withOpacity(0.3))
+                            color:
+                                const Color(0xFF8B5CF6).withValues(alpha: 0.3))
                         : null,
                   ),
                   child: Column(
@@ -313,7 +316,7 @@ class _GrammarLevelsPageState extends State<GrammarLevelsPage> {
             width: 2,
             margin: EdgeInsets.only(left: 29.w),
             color: isUnlocked
-                ? const Color(0xFF8B5CF6).withOpacity(0.3)
+                ? const Color(0xFF8B5CF6).withValues(alpha: 0.3)
                 : (isDark ? Colors.white10 : Colors.black12),
           ),
       ],

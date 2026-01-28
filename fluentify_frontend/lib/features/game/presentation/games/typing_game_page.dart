@@ -157,8 +157,9 @@ class _TypingGamePageState extends State<TypingGamePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_currentChallengeIndex >= _challenges.length)
+    if (_currentChallengeIndex >= _challenges.length) {
       return const SizedBox.shrink();
+    }
 
     return Scaffold(
       appBar: AppBar(

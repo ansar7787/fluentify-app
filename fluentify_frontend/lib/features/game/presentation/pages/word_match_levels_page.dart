@@ -10,7 +10,7 @@ import '../bloc/game_bloc.dart';
 import '../bloc/game_event.dart';
 import '../bloc/game_state.dart';
 import '../../../user/presentation/bloc/user_bloc.dart';
-import '../../../user/presentation/bloc/user_event.dart';
+
 import '../../../user/presentation/bloc/user_state.dart';
 import '../games/word_match_game_page.dart';
 
@@ -159,7 +159,7 @@ class _WordMatchLevelsPageState extends State<WordMatchLevelsPage> {
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(Icons.extension_rounded, color: color),
@@ -175,14 +175,14 @@ class _WordMatchLevelsPageState extends State<WordMatchLevelsPage> {
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [color, color.withOpacity(0.8)],
+          colors: [color, color.withValues(alpha: 0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.4),
+            color: color.withValues(alpha: 0.4),
             blurRadius: 15,
             offset: const Offset(0, 8),
           )
@@ -249,12 +249,14 @@ class _WordMatchLevelsPageState extends State<WordMatchLevelsPage> {
         decoration: BoxDecoration(
           color: isUnlocked
               ? (isCurrent ? color : (isDark ? Colors.white12 : Colors.white))
-              : (isDark ? Colors.white.withOpacity(0.05) : Colors.grey[200]),
+              : (isDark
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.grey[200]),
           borderRadius: BorderRadius.circular(20.r),
           boxShadow: isUnlocked && !isCurrent
               ? [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   )

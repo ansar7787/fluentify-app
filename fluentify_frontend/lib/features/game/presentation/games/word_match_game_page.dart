@@ -61,15 +61,17 @@ class _WordMatchGamePageState extends State<WordMatchGamePage> {
 
     setState(() {
       if (isLeft) {
-        if (_selectedLeft == item)
+        if (_selectedLeft == item) {
           _selectedLeft = null; // Deselect
-        else
+        } else {
           _selectedLeft = item;
+        }
       } else {
-        if (_selectedRight == item)
+        if (_selectedRight == item) {
           _selectedRight = null; // Deselect
-        else
+        } else {
           _selectedRight = item;
+        }
       }
     });
 
@@ -108,7 +110,7 @@ class _WordMatchGamePageState extends State<WordMatchGamePage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Incorrect match! Try again.'),
-              backgroundColor: Colors.red.withOpacity(0.8),
+              backgroundColor: Colors.red.withValues(alpha: 0.8),
               duration: const Duration(milliseconds: 500),
               behavior: SnackBarBehavior.floating,
             ),
@@ -218,8 +220,9 @@ class _WordMatchGamePageState extends State<WordMatchGamePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_currentChallengeIndex >= _challenges.length)
+    if (_currentChallengeIndex >= _challenges.length) {
       return const SizedBox.shrink();
+    }
     final challenge = _challenges[_currentChallengeIndex];
 
     return Scaffold(
@@ -254,10 +257,10 @@ class _WordMatchGamePageState extends State<WordMatchGamePage> {
               width: double.infinity,
               padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
-                color: const Color(0xFF8B5CF6).withOpacity(0.1),
+                color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16.r),
-                border:
-                    Border.all(color: const Color(0xFF8B5CF6).withOpacity(0.2)),
+                border: Border.all(
+                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.2)),
               ),
               child: Text(
                 challenge.instruction,
@@ -302,12 +305,12 @@ class _WordMatchGamePageState extends State<WordMatchGamePage> {
             padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
             decoration: BoxDecoration(
               color: isMatched
-                  ? Colors.green.shade100.withOpacity(0.5)
+                  ? Colors.green.shade100.withValues(alpha: 0.5)
                   : (isSelected ? const Color(0xFF8B5CF6) : Colors.white),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isMatched
-                    ? Colors.green.withOpacity(0.5)
+                    ? Colors.green.withValues(alpha: 0.5)
                     : (isSelected
                         ? const Color(0xFF8B5CF6)
                         : Colors.grey.shade200),
@@ -317,7 +320,7 @@ class _WordMatchGamePageState extends State<WordMatchGamePage> {
                   ? []
                   : [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       )

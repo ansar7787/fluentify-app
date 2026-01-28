@@ -34,7 +34,7 @@ class GameLocalDataSourceImpl implements GameLocalDataSource {
   @override
   Future<List<GrammarLevelModel>> getGrammarLevels() async {
     return [
-      GrammarLevelModel(
+      const GrammarLevelModel(
         level: 1,
         title: 'Beginner Basics',
         challenges: [
@@ -62,7 +62,7 @@ class GameLocalDataSourceImpl implements GameLocalDataSource {
   @override
   Future<List<SpeakingLevelModel>> getSpeakingLevels() async {
     return [
-      SpeakingLevelModel(
+      const SpeakingLevelModel(
         level: 1,
         title: 'Self Introduction',
         challenges: [
@@ -81,7 +81,7 @@ class GameLocalDataSourceImpl implements GameLocalDataSource {
   @override
   Future<List<ScrambleLevelModel>> getScrambleLevels() async {
     return [
-      ScrambleLevelModel(
+      const ScrambleLevelModel(
         level: 1,
         title: 'Simple Sentences',
         challenges: [
@@ -100,24 +100,27 @@ class GameLocalDataSourceImpl implements GameLocalDataSource {
   @override
   Future<List<WordMatchLevelModel>> getWordMatchLevels() async {
     return [
-      WordMatchLevelModel(level: 1, title: 'Basic Vocabulary', challenges: [
-        WordMatchChallengeModel(
-            id: 'wm_1_1',
-            instruction: 'Match the words.',
-            pairs: [
-              WordPairModel(word: 'Happy', match: 'Joyful'),
-              WordPairModel(word: 'Sad', match: 'Unhappy'),
-              WordPairModel(word: 'Big', match: 'Large'),
-            ],
-            difficulty: 'Beginner')
-      ])
+      const WordMatchLevelModel(
+          level: 1,
+          title: 'Basic Vocabulary',
+          challenges: [
+            WordMatchChallengeModel(
+                id: 'wm_1_1',
+                instruction: 'Match the words.',
+                pairs: [
+                  WordPairModel(word: 'Happy', match: 'Joyful'),
+                  WordPairModel(word: 'Sad', match: 'Unhappy'),
+                  WordPairModel(word: 'Big', match: 'Large'),
+                ],
+                difficulty: 'Beginner')
+          ])
     ];
   }
 
   @override
   Future<List<TypingLevelModel>> getTypingLevels() async {
     return [
-      TypingLevelModel(level: 1, title: 'Fast Fingers', challenges: [
+      const TypingLevelModel(level: 1, title: 'Fast Fingers', challenges: [
         TypingChallengeModel(
             id: 't_1_1',
             textToType: 'The quick brown fox jumps over the lazy dog.',
@@ -130,7 +133,7 @@ class GameLocalDataSourceImpl implements GameLocalDataSource {
   @override
   Future<List<DictationLevelModel>> getDictationLevels() async {
     return [
-      DictationLevelModel(level: 1, title: 'Listen Up', challenges: [
+      const DictationLevelModel(level: 1, title: 'Listen Up', challenges: [
         DictationChallengeModel(
             id: 'd_1_1',
             correctText: 'Hello world',
@@ -144,7 +147,7 @@ class GameLocalDataSourceImpl implements GameLocalDataSource {
   @override
   Future<List<ReadingLevelModel>> getReadingLevels() async {
     return [
-      ReadingLevelModel(level: 1, title: 'Short Story', challenges: [
+      const ReadingLevelModel(level: 1, title: 'Short Story', challenges: [
         ReadingChallengeModel(
             id: 'r_1_1',
             title: 'Tom and the Cat',
@@ -160,7 +163,7 @@ class GameLocalDataSourceImpl implements GameLocalDataSource {
   @override
   Future<List<RapidFireLevelModel>> getRapidFireLevels() async {
     return [
-      RapidFireLevelModel(level: 1, title: 'Speed Round', challenges: [
+      const RapidFireLevelModel(level: 1, title: 'Speed Round', challenges: [
         RapidFireChallengeModel(
             id: 'rf_1_1',
             question: 'Opposite of Up?',

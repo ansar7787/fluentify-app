@@ -39,7 +39,7 @@ class AdminDashboardPage extends StatelessWidget {
               Container(
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(color: Colors.white10),
                 ),
@@ -47,10 +47,10 @@ class AdminDashboardPage extends StatelessWidget {
                   children: [
                     _buildInfoRow(Icons.games_rounded, "Game Levels",
                         "Manage all 8 game categories"),
-                    Divider(color: Colors.white10),
+                    const Divider(color: Colors.white10),
                     _buildInfoRow(Icons.people_rounded, "Users",
                         "View and manage user accounts"),
-                    Divider(color: Colors.white10),
+                    const Divider(color: Colors.white10),
                     _buildInfoRow(Icons.analytics_rounded, "Analytics",
                         "View app usage statistics"),
                   ],

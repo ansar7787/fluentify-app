@@ -6,7 +6,6 @@ import 'package:record/record.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../../../features/mission/domain/entities/mission_entity.dart';
 
-import 'dart:ui';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -125,7 +124,9 @@ class _SpeakingGamePageState extends State<SpeakingGamePage> {
         await _audioPlayer.play();
         _audioPlayer.playerStateStream.listen((state) {
           if (state.processingState == ProcessingState.completed) {
-            if (mounted) setState(() => _isPlaying = false);
+            if (mounted) {
+              setState(() => _isPlaying = false);
+            }
           }
         });
       } catch (e) {
@@ -206,7 +207,7 @@ class _SpeakingGamePageState extends State<SpeakingGamePage> {
                     ),
                     SizedBox(height: 20.h),
                     if (result.feedback.transcript.isNotEmpty) ...[
-                      Text(
+                      const Text(
                         'Transcript:',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
@@ -330,14 +331,14 @@ class _SpeakingGamePageState extends State<SpeakingGamePage> {
                           padding: EdgeInsets.all(24.w),
                           decoration: BoxDecoration(
                             color: isDark
-                                ? Colors.white.withOpacity(0.05)
+                                ? Colors.white.withValues(alpha: 0.05)
                                 : Colors.white,
                             borderRadius: BorderRadius.circular(20.r),
-                            boxShadow: [
+                            boxShadow: const [
                               BoxShadow(
                                 color: Colors.black12,
                                 blurRadius: 10,
-                                offset: const Offset(0, 4),
+                                offset: Offset(0, 4),
                               )
                             ],
                           ),
@@ -362,7 +363,7 @@ class _SpeakingGamePageState extends State<SpeakingGamePage> {
                                 size: 60.w,
                                 color: AppTheme.accentBlue),
                           ),
-                          Text('Tap to play',
+                          const Text('Tap to play',
                               style: TextStyle(color: Colors.grey)),
                         ],
                       ],
@@ -414,7 +415,7 @@ class _SpeakingGamePageState extends State<SpeakingGamePage> {
                     boxShadow: [
                       BoxShadow(
                         color: (_isRecording ? Colors.red : AppTheme.accentBlue)
-                            .withOpacity(0.4),
+                            .withValues(alpha: 0.4),
                         blurRadius: 20,
                         spreadRadius: 5,
                       )

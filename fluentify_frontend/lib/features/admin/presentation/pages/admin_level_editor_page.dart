@@ -84,7 +84,7 @@ class _AdminLevelEditorPageState extends State<AdminLevelEditorPage> {
       'gameType': _selectedGameType,
       'levelNumber': int.tryParse(_levelNumberController.text) ?? 1,
       'title': _topicController.text, // Using topic as title for now
-      'description': 'AI Generated Level - ${_selectedDifficulty}',
+      'description': 'AI Generated Level - $_selectedDifficulty',
       'content': _generatedContent,
     };
 
@@ -157,7 +157,7 @@ class _AdminLevelEditorPageState extends State<AdminLevelEditorPage> {
           children: [
             Expanded(
               child: DropdownButtonFormField<String>(
-                value: _selectedGameType,
+                initialValue: _selectedGameType,
                 dropdownColor: AppTheme.cardBg,
                 style: const TextStyle(color: Colors.white),
                 decoration: _inputDecoration('Game Type'),
@@ -174,7 +174,7 @@ class _AdminLevelEditorPageState extends State<AdminLevelEditorPage> {
             SizedBox(width: 16.w),
             Expanded(
               child: DropdownButtonFormField<String>(
-                value: _selectedDifficulty,
+                initialValue: _selectedDifficulty,
                 dropdownColor: AppTheme.cardBg,
                 style: const TextStyle(color: Colors.white),
                 decoration: _inputDecoration('Difficulty'),
@@ -218,7 +218,7 @@ class _AdminLevelEditorPageState extends State<AdminLevelEditorPage> {
           margin: EdgeInsets.only(bottom: 12.h),
           padding: EdgeInsets.all(12.w),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(color: Colors.white10),
           ),
@@ -283,13 +283,13 @@ class _AdminLevelEditorPageState extends State<AdminLevelEditorPage> {
       labelText: label,
       labelStyle: const TextStyle(color: Colors.white54),
       filled: true,
-      fillColor: Colors.white.withOpacity(0.05),
+      fillColor: Colors.white.withValues(alpha: 0.05),
       border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
           borderSide: BorderSide.none),
       enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: BorderSide(color: Colors.white10)),
+          borderSide: const BorderSide(color: Colors.white10)),
     );
   }
 }
