@@ -929,24 +929,144 @@ class GameLocalDataSourceImpl implements GameLocalDataSource {
   }
 
   WordMatchChallengeModel _generateProceduralWordMatch(int level, int index) {
-    final pairs = [
-      WordPairModel(word: 'Big', match: 'Large'),
-      WordPairModel(word: 'Happy', match: 'Joyful'),
-      WordPairModel(word: 'Fast', match: 'Quick'),
-      WordPairModel(word: 'Start', match: 'Begin'),
-      WordPairModel(word: 'End', match: 'Finish'),
-      WordPairModel(word: 'Smart', match: 'Clever'),
-      WordPairModel(word: 'Hard', match: 'Difficult'),
-      WordPairModel(word: 'Rich', match: 'Wealthy'),
-      WordPairModel(word: 'Safe', match: 'Secure'),
-      WordPairModel(word: 'Old', match: 'Ancient'),
+    // 1. Define tiered vocabularies
+    final easySynonyms = [
+      {'w': 'Big', 'm': 'Large'},
+      {'w': 'Small', 'm': 'Tiny'},
+      {'w': 'Happy', 'm': 'Glad'},
+      {'w': 'Sad', 'm': 'Unhappy'},
+      {'w': 'Fast', 'm': 'Quick'},
+      {'w': 'Slow', 'm': 'Sluggish'},
+      {'w': 'Hot', 'm': 'Warm'},
+      {'w': 'Cold', 'm': 'Chilly'},
+      {'w': 'Start', 'm': 'Begin'},
+      {'w': 'End', 'm': 'Finish'},
+      {'w': 'Rich', 'm': 'Wealthy'},
+      {'w': 'Poor', 'm': 'Needy'},
+      {'w': 'Hard', 'm': 'Difficult'},
+      {'w': 'Easy', 'm': 'Simple'},
+      {'w': 'Smart', 'm': 'Clever'},
+      {'w': 'Dumb', 'm': 'Stupid'},
+      {'w': 'Right', 'm': 'Correct'},
+      {'w': 'Wrong', 'm': 'Incorrect'},
+      {'w': 'Safe', 'm': 'Secure'},
+      {'w': 'Dangerous', 'm': 'Risky'},
     ];
-    // Shuffle pairs logic would be better here, simple slice for now
-    final p = pairs.take(3 + (level % 3)).toList();
+
+    final mediumSynonyms = [
+      {'w': 'Ancient', 'm': 'Old'},
+      {'w': 'Modern', 'm': 'New'},
+      {'w': 'Create', 'm': 'Make'},
+      {'w': 'Destroy', 'm': 'Ruin'},
+      {'w': 'Answer', 'm': 'Reply'},
+      {'w': 'Ask', 'm': 'Inquire'},
+      {'w': 'Beautiful', 'm': 'Pretty'},
+      {'w': 'Ugly', 'm': 'Hideous'},
+      {'w': 'Brave', 'm': 'Courageous'},
+      {'w': 'Scared', 'm': 'Afraid'},
+      {'w': 'Calm', 'm': 'Peaceful'},
+      {'w': 'Angry', 'm': 'Furious'},
+      {'w': 'Bright', 'm': 'Shiny'},
+      {'w': 'Dark', 'm': 'Dim'},
+      {'w': 'Clean', 'm': 'Tidy'},
+      {'w': 'Dirty', 'm': 'Messy'},
+      {'w': 'Break', 'm': 'Smash'},
+      {'w': 'Fix', 'm': 'Repair'},
+      {'w': 'Help', 'm': 'Assist'},
+      {'w': 'Hurt', 'm': 'Harm'},
+    ];
+
+    final hardSynonyms = [
+      {'w': 'Abundant', 'm': 'Plentiful'},
+      {'w': 'Scarce', 'm': 'Rare'},
+      {'w': 'Accurate', 'm': 'Precise'},
+      {'w': 'Vague', 'm': 'Unclear'},
+      {'w': 'Benevolent', 'm': 'Kind'},
+      {'w': 'Malevolent', 'm': 'Evil'},
+      {'w': 'Candid', 'm': 'Honest'},
+      {'w': 'Deceptive', 'm': 'Dishonest'},
+      {'w': 'Diligent', 'm': 'Hardworking'},
+      {'w': 'Lazy', 'm': 'Slothful'},
+      {'w': 'Eloquent', 'm': 'Articulate'},
+      {'w': 'Mute', 'm': 'Silent'},
+      {'w': 'Frugal', 'm': 'Thrifty'},
+      {'w': 'Wasteful', 'm': 'Extravagant'},
+      {'w': 'Genuine', 'm': 'Authentic'},
+      {'w': 'Fake', 'm': 'Counterfeit'},
+      {'w': 'Humble', 'm': 'Modest'},
+      {'w': 'Arrogant', 'm': 'Proud'},
+      {'w': 'Immaculate', 'm': 'Spotless'},
+      {'w': 'Filthy', 'm': 'Grimy'},
+    ];
+
+    final definitions = [
+      {'w': 'Ephemeral', 'm': 'Short-lived'},
+      {'w': 'Eternal', 'm': 'Forever'},
+      {'w': 'Obtuse', 'm': 'Slow to understand'},
+      {'w': 'Acute', 'm': 'Sharp/Severe'},
+      {'w': 'Alleviate', 'm': 'Make easier'},
+      {'w': 'Aggravate', 'm': 'Make worse'},
+      {'w': 'Ambiguous', 'm': 'Unclear'},
+      {'w': 'Explicit', 'm': 'Clear/Direct'},
+      {'w': 'Apathy', 'm': 'Lack of interest'},
+      {'w': 'Empathy', 'm': 'Understanding feelings'},
+      {'w': 'Belligerent', 'm': 'Hostile'},
+      {'w': 'Peaceful', 'm': 'Non-violent'},
+      {'w': 'Bias', 'm': 'Prejudice'},
+      {'w': 'Neutral', 'm': 'Unbiased'},
+      {'w': 'Brevity', 'm': 'Conciseness'},
+      {'w': 'Prolixity', 'm': 'Wordiness'},
+      {'w': 'Cacophony', 'm': 'Harsh noise'},
+      {'w': 'Harmony', 'm': 'Pleasing sound'},
+      {'w': 'Capitulate', 'm': 'Surrender'},
+      {'w': 'Resist', 'm': 'Fight back'},
+    ];
+
+    // 2. Determine pool based on level
+    List<Map<String, String>> pool;
+    String type = 'Synonyms';
+
+    if (level <= 20) {
+      pool = easySynonyms;
+    } else if (level <= 50) {
+      pool = mediumSynonyms;
+    } else if (level <= 80) {
+      pool = hardSynonyms;
+    } else {
+      pool = definitions;
+      type = 'Definitions';
+    }
+
+    // 3. Shuffle (pseudo-random based on seed)
+    int seed = (level * 100) + (index * 13);
+
+    // Simple deterministic shuffle simulation
+    List<Map<String, String>> selected = [];
+    List<int> indices = List.generate(pool.length, (i) => i);
+    // Fisher-Yates shuffle with seed
+    for (int i = indices.length - 1; i > 0; i--) {
+      int n = (seed + i * 37) % (i + 1);
+      int temp = indices[i];
+      indices[i] = indices[n];
+      indices[n] = temp;
+    }
+
+    // Select 4-6 pairs depending on level
+    int pairCount = 4 + (level ~/ 25);
+    if (pairCount > 8) pairCount = 8;
+
+    for (int i = 0; i < pairCount; i++) {
+      selected.add(pool[indices[i % pool.length]]);
+    }
+
     return WordMatchChallengeModel(
       id: 'wm_${level}_$index',
-      instruction: 'Match synonyms',
-      pairs: p,
+      instruction: type == 'Definitions'
+          ? 'Match words to definitions'
+          : 'Match the pairs ($type)',
+      pairs: selected
+          .map((e) => WordPairModel(word: e['w']!, match: e['m']!))
+          .toList(),
     );
   }
 
