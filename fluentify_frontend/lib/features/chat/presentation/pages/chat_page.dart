@@ -1,73 +1,44 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/services/socket_service.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/network/chat_service.dart';
+import '../bloc/chat_bloc.dart';
+import '../../../../config/theme/app_theme.dart';
 
-class ChatPage extends StatefulWidget {
-  final String currentUserId;
-  final String otherUserId;
-  final String otherUserName;
+class ChatPage extends StatelessWidget {
+  final String room;
+  final String currentUser;
 
-  const ChatPage({
-    super.key,
-    required this.currentUserId,
-    required this.otherUserId,
-    required this.otherUserName,
-  });
+  const ChatPage({super.key, required this.room, required this.currentUser});
 
   @override
-  State<ChatPage> createState() => _ChatPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => ChatBloc(ChatService())..add(ChatConnect(room)),
+      child: ChatView(currentUser: currentUser, room: room),
+    );
+  }
 }
 
-class _ChatPageState extends State<ChatPage> {
-  final TextEditingController _controller = TextEditingController();
-  final SocketService _socketService = SocketService();
-  final List<Map<String, dynamic>> _messages = [];
+class ChatView extends StatefulWidget {
+  final String currentUser;
+  final String room;
+
+  const ChatView({super.key, required this.currentUser, required this.room});
 
   @override
-  void initState() {
-    super.initState();
-    // Initialize socket/join room
-    _socketService.initSocket(widget.currentUserId);
+  State<ChatView> createState() => _ChatViewState();
+}
 
-    // Listen
-    _socketService.listenForMessages((data) {
-      if (mounted) {
-        setState(() {
-          _messages.add({
-            'content': data['content'],
-            'sender_id': data['sender'][
-                'id'], // Assuming populated or just sender_id depending on backend
-            'isMe': false,
-          });
-        });
-      }
-    });
-
-    _socketService.listenForMessageSent((data) {
-      if (mounted) {
-        setState(() {
-          // Confirm sent, maybe update status or just rely on local add
-          // If we added locally optimistically, we might not need this
-        });
-      }
-    });
-  }
+class _ChatViewState extends State<ChatView> {
+  final TextEditingController _controller = TextEditingController();
 
   void _sendMessage() {
-    if (_controller.text.trim().isEmpty) return;
-
-    final content = _controller.text.trim();
-
-    // Optimistic UI update
-    setState(() {
-      _messages.add({
-        'content': content,
-        'sender_id': widget.currentUserId,
-        'isMe': true,
-      });
-    });
-
-    _socketService.sendMessage(
-        widget.currentUserId, widget.otherUserId, content);
+    if (_controller.text.isEmpty) return;
+    context.read<ChatBloc>().add(ChatSendMessage(
+          room: widget.room,
+          message: _controller.text,
+          sender: widget.currentUser,
+        ));
     _controller.clear();
   }
 
@@ -75,73 +46,122 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.otherUserName),
+        title: Text(widget.room == 'global' ? 'Community Chat' : 'Chat Room'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        foregroundColor: Colors.black,
       ),
+      backgroundColor: const Color(0xFFF8FAFC),
       body: Column(
         children: [
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final msg = _messages[index];
-                final isMe = msg['isMe'] as bool;
-                return Align(
-                  alignment:
-                      isMe ? Alignment.centerRight : Alignment.centerLeft,
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: isMe
-                          ? Theme.of(context).primaryColor
-                          : Colors.grey[300],
-                      borderRadius: BorderRadius.circular(16).copyWith(
-                        bottomRight:
-                            isMe ? Radius.zero : const Radius.circular(16),
-                        bottomLeft:
-                            isMe ? const Radius.circular(16) : Radius.zero,
-                      ),
-                    ),
-                    child: Text(
-                      msg['content'],
-                      style: TextStyle(
-                        color: isMe ? Colors.white : Colors.black87,
-                      ),
-                    ),
-                  ),
-                );
+            child: BlocBuilder<ChatBloc, ChatState>(
+              builder: (context, state) {
+                if (state is ChatLoaded) {
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    reverse:
+                        false, // Default socket.io logic usually appends to bottom, standard list
+                    itemCount: state.messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = state.messages[index];
+                      final isMe = msg['sender'] == widget.currentUser;
+                      return Align(
+                        alignment:
+                            isMe ? Alignment.centerRight : Alignment.centerLeft,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: isMe ? AppTheme.accentBlue : Colors.white,
+                            borderRadius: BorderRadius.only(
+                              topLeft: const Radius.circular(16),
+                              topRight: const Radius.circular(16),
+                              bottomLeft: isMe
+                                  ? const Radius.circular(16)
+                                  : const Radius.circular(0),
+                              bottomRight: isMe
+                                  ? const Radius.circular(0)
+                                  : const Radius.circular(16),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.1),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              )
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (!isMe)
+                                Text(
+                                  msg['sender'],
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              Text(
+                                msg['message'],
+                                style: TextStyle(
+                                  color: isMe ? Colors.white : Colors.black87,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }
+                return const Center(child: CircularProgressIndicator());
               },
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: InputDecoration(
-                      hintText: 'Type a message...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            color: Colors.white,
+            child: SafeArea(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      decoration: InputDecoration(
+                        hintText: "Type a message...",
+                        filled: true,
+                        fillColor: Colors.grey[100],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 14),
                       ),
-                      contentPadding:
-                          const EdgeInsets.symmetric(horizontal: 16),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                CircleAvatar(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  child: IconButton(
-                    icon: const Icon(Icons.send, color: Colors.white),
-                    onPressed: _sendMessage,
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: _sendMessage,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: const BoxDecoration(
+                        color: AppTheme.accentBlue,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.send_rounded,
+                          color: Colors.white, size: 20),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          )
         ],
       ),
     );

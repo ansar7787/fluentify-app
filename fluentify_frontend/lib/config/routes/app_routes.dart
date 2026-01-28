@@ -12,6 +12,7 @@ import '../../features/user/presentation/pages/notifications_page.dart';
 import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
 import '../../features/admin/presentation/pages/admin_level_editor_page.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
+import '../../features/chat/presentation/pages/chat_page.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -42,5 +43,7 @@ class AppRoutes {
         notifications: (context) => const NotificationsPage(),
         adminDashboard: (context) => const AdminDashboardPage(),
         adminLevelEditor: (context) => const AdminLevelEditorPage(),
+        '/chat': (context) =>
+            const ChatPage(room: 'global', currentUser: 'User'), // Demo Route
       };
 }
