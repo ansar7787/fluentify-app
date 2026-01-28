@@ -58,6 +58,13 @@ import '../../features/game/domain/usecases/get_rapid_fire_levels_usecase.dart';
 import '../../features/game/presentation/bloc/game_bloc.dart';
 
 import '../constants/app_constants.dart';
+import '../../core/network/chat_service.dart';
+import '../../features/chat/domain/repositories/chat_repository.dart';
+import '../../features/chat/data/repositories/chat_repository_impl.dart';
+import '../../features/chat/domain/usecases/connect_chat_usecase.dart';
+import '../../features/chat/domain/usecases/send_message_usecase.dart';
+import '../../features/chat/domain/usecases/get_chat_messages_usecase.dart';
+import '../../features/chat/presentation/bloc/chat_bloc.dart';
 
 final getIt = GetIt.instance;
 
@@ -256,4 +263,22 @@ Future<void> setupServiceLocator() async {
       getRapidFireLevels: getIt<GetRapidFireLevelsUseCase>(),
     ),
   );
+
+  // Chat
+  getIt.registerLazySingleton<ChatService>(() => ChatService());
+  getIt.registerLazySingleton<ChatRepository>(
+      () => ChatRepositoryImpl(getIt<ChatService>()));
+
+  getIt
+      .registerLazySingleton(() => ConnectChatUseCase(getIt<ChatRepository>()));
+  getIt
+      .registerLazySingleton(() => SendMessageUseCase(getIt<ChatRepository>()));
+  getIt.registerLazySingleton(
+      () => GetChatMessagesUseCase(getIt<ChatRepository>()));
+
+  getIt.registerFactory(() => ChatBloc(
+        connectChat: getIt<ConnectChatUseCase>(),
+        sendMessage: getIt<SendMessageUseCase>(),
+        getChatMessages: getIt<GetChatMessagesUseCase>(),
+      ));
 }

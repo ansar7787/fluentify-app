@@ -1,6 +1,9 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/network/chat_service.dart';
+import '../../domain/usecases/connect_chat_usecase.dart';
+import '../../domain/usecases/send_message_usecase.dart';
+import '../../domain/usecases/get_chat_messages_usecase.dart';
+import '../../domain/entities/chat_message.dart';
 
 // Events
 abstract class ChatEvent extends Equatable {
@@ -18,13 +21,17 @@ class ChatSendMessage extends ChatEvent {
   final String room;
   final String message;
   final String sender;
+  final String senderId;
 
   const ChatSendMessage(
-      {required this.room, required this.message, required this.sender});
+      {required this.room,
+      required this.message,
+      required this.sender,
+      required this.senderId});
 }
 
 class ChatReceiveMessage extends ChatEvent {
-  final Map<String, dynamic> message;
+  final ChatMessage message;
   const ChatReceiveMessage(this.message);
 }
 
@@ -38,7 +45,7 @@ abstract class ChatState extends Equatable {
 class ChatInitial extends ChatState {}
 
 class ChatLoaded extends ChatState {
-  final List<Map<String, dynamic>> messages;
+  final List<ChatMessage> messages;
   const ChatLoaded(this.messages);
   @override
   List<Object> get props => [messages];
@@ -46,32 +53,31 @@ class ChatLoaded extends ChatState {
 
 // Bloc
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
-  final ChatService _chatService;
-  final List<Map<String, dynamic>> _messages = [];
+  final ConnectChatUseCase connectChat;
+  final SendMessageUseCase sendMessage;
+  final GetChatMessagesUseCase getChatMessages;
+  final List<ChatMessage> _messages = [];
 
-  ChatBloc(this._chatService) : super(ChatInitial()) {
+  ChatBloc({
+    required this.connectChat,
+    required this.sendMessage,
+    required this.getChatMessages,
+  }) : super(ChatInitial()) {
     on<ChatConnect>((event, emit) {
-      _chatService.initSocket();
-      _chatService.joinRoom(event.room);
-      _chatService.onMessageReceived((data) {
-        add(ChatReceiveMessage(Map<String, dynamic>.from(data)));
+      connectChat(event.room);
+      getChatMessages().listen((message) {
+        add(ChatReceiveMessage(message));
       });
       emit(ChatLoaded(List.from(_messages)));
     });
 
     on<ChatSendMessage>((event, emit) {
-      _chatService.sendMessage(event.room, event.message, event.sender);
+      sendMessage(event.room, event.message, event.sender, event.senderId);
     });
 
     on<ChatReceiveMessage>((event, emit) {
       _messages.add(event.message);
       emit(ChatLoaded(List.from(_messages)));
     });
-  }
-
-  @override
-  Future<void> close() {
-    _chatService.disconnect();
-    return super.close();
   }
 }
