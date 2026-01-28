@@ -68,6 +68,21 @@ export class User {
     @Column({ default: 1 })
     speakingLevel: number;
 
+    @Column({ default: 1 })
+    wordMatchLevel: number;
+
+    @Column({ default: 1 })
+    typingLevel: number;
+
+    @Column({ default: 1 })
+    dictationLevel: number;
+
+    @Column({ default: 1 })
+    readingLevel: number;
+
+    @Column({ default: 1 })
+    rapidFireLevel: number;
+
     @Column({ type: 'timestamp', nullable: true })
     lastPracticeDate?: Date;
 

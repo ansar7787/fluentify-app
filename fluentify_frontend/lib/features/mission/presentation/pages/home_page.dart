@@ -287,6 +287,27 @@ class _HomePageState extends State<HomePage> {
         'icon': Icons.timer_rounded,
         'page': const RapidFireLevelsPage()
       },
+      {
+        'title': 'Arcade Arena',
+        'desc': 'Mini-games hub',
+        'color': Colors.indigo,
+        'icon': Icons.games_rounded,
+        'page': const GameHomePage()
+      },
+      {
+        'title': 'Grammar Quest',
+        'desc': 'Master rules',
+        'color': Colors.purple,
+        'icon': Icons.text_fields_rounded,
+        'page': const GrammarLevelsPage()
+      },
+      {
+        'title': 'Fluency Flow',
+        'desc': 'Speak confidently',
+        'color': Colors.teal,
+        'icon': Icons.mic_rounded,
+        'page': const SpeakingLevelsPage()
+      },
     ];
 
     return SizedBox(

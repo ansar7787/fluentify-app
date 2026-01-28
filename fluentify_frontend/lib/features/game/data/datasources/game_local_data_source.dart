@@ -1083,11 +1083,28 @@ class GameLocalDataSourceImpl implements GameLocalDataSource {
   }
 
   List<TypingChallengeModel> _generateTypingChallenges(int level) {
+    final texts = [
+      "The quick brown fox jumps over the lazy dog.",
+      "Practice makes perfect, so keep typing everyday.",
+      "Flutter is Google's UI toolkit for building natively compiled applications.",
+      "To be or not to be, that is the question.",
+      "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+      "In the middle of difficulty lies opportunity.",
+      "A journey of a thousand miles begins with a single step.",
+      "Life is what happens when you're busy making other plans.",
+      "Get busy living or get busy dying.",
+      "You only live once, but if you do it right, once is enough."
+    ];
+
+    final text = texts[(level - 1) % texts.length];
+
     return [
       TypingChallengeModel(
         id: 't_${level}_0',
-        textToType: 'The quick brown fox jumps over the lazy dog.',
-        timeLimitSeconds: 60 - (level ~/ 2).clamp(0, 40),
+        textToType: text,
+        timeLimitSeconds: (text.length / 3)
+            .ceil()
+            .clamp(10, 60), // Dynamic time based on length
         difficulty: level > 50 ? 'Advanced' : 'Beginner',
       )
     ];
@@ -1106,12 +1123,27 @@ class GameLocalDataSourceImpl implements GameLocalDataSource {
   }
 
   List<DictationChallengeModel> _generateDictationChallenges(int level) {
+    final sentences = [
+      {"t": "The sun is shining today.", "h": "Weather"},
+      {"t": "I like to eat apples and bananas.", "h": "Fruit"},
+      {"t": "She went to the library to read.", "h": "Place"},
+      {"t": "My favorite color is blue.", "h": "Color"},
+      {"t": "Can you help me with my homework?", "h": "Question"},
+      {"t": "The quick brown fox jumps.", "h": "Animal"},
+      {"t": "Elephants are the largest land animals.", "h": "Fact"},
+      {"t": "It is important to sleep well.", "h": "Health"},
+      {"t": "Technology changes the world fast.", "h": "Tech"},
+      {"t": "Music brings people together.", "h": "Art"},
+    ];
+
+    final item = sentences[(level - 1) % sentences.length];
+
     return [
       DictationChallengeModel(
         id: 'd_${level}_0',
-        correctText: 'This is a practice sentence for level $level.',
-        hint: 'Listen carefully.',
-        difficulty: 'Beginner',
+        correctText: item['t']!,
+        hint: item['h']!,
+        difficulty: level > 5 ? 'Intermediate' : 'Beginner',
       )
     ];
   }
@@ -1129,14 +1161,64 @@ class GameLocalDataSourceImpl implements GameLocalDataSource {
   }
 
   List<ReadingChallengeModel> _generateReadingChallenges(int level) {
+    final passages = [
+      {
+        "title": "The Park",
+        "passage":
+            "John went to the park. He saw a big dog playing with a ball.",
+        "question": "What was the dog doing?",
+        "options": [
+          "Sleeping",
+          "Playing with a ball",
+          "Eating",
+          "Running away"
+        ],
+        "correct": 1
+      },
+      {
+        "title": "Morning Routine",
+        "passage":
+            "Sarah wakes up at 7 AM. She eats toast and drinks coffee before work.",
+        "question": "What does Sarah drink?",
+        "options": ["Tea", "Juice", "Water", "Coffee"],
+        "correct": 3
+      },
+      {
+        "title": "Space Travel",
+        "passage":
+            "Astronauts wear special suits to survive in space. There is no air to breathe.",
+        "question": "Why do astronauts wear suits?",
+        "options": ["To look cool", "To breathe", "To sleep", "To eat"],
+        "correct": 1
+      },
+      {
+        "title": "Penguins",
+        "passage":
+            "Penguins are birds but they cannot fly. They swim very well in cold water.",
+        "question": "Can penguins fly?",
+        "options": ["Yes", "No", "Only at night", "Sometimes"],
+        "correct": 1
+      },
+      {
+        "title": "The Ocean",
+        "passage":
+            "The ocean covers most of the Earth. It is full of salt water and many fish.",
+        "question": "Is the ocean water fresh?",
+        "options": ["Yes", "No, it's salty", "It's sweet", "It is empty"],
+        "correct": 1
+      }
+    ];
+
+    final item = passages[(level - 1) % passages.length];
+
     return [
       ReadingChallengeModel(
         id: 'r_${level}_0',
-        title: 'The Park',
-        passage: 'John went to the park. He saw a big dog.',
-        question: 'What did John see?',
-        options: ['A cat', 'A dog', 'A bird', 'A car'],
-        correctOptionIndex: 1,
+        title: item['title'] as String,
+        passage: item['passage'] as String,
+        question: item['question'] as String,
+        options: item['options'] as List<String>,
+        correctOptionIndex: item['correct'] as int,
       )
     ];
   }
@@ -1154,12 +1236,54 @@ class GameLocalDataSourceImpl implements GameLocalDataSource {
   }
 
   List<RapidFireChallengeModel> _generateRapidFireChallenges(int level) {
+    final questions = [
+      {
+        "q": "Name a fruit that is red.",
+        "a": ["Apple", "Strawberry", "Cherry", "Tomato", "Raspberry"]
+      },
+      {
+        "q": "Name a planet in our solar system.",
+        "a": [
+          "Mercury",
+          "Venus",
+          "Earth",
+          "Mars",
+          "Jupiter",
+          "Saturn",
+          "Uranus",
+          "Neptune"
+        ]
+      },
+      {
+        "q": "Name a primary color.",
+        "a": ["Red", "Blue", "Yellow"]
+      },
+      {
+        "q": "Name a continent.",
+        "a": [
+          "Asia",
+          "Africa",
+          "Europe",
+          "North America",
+          "South America",
+          "Australia",
+          "Antarctica"
+        ]
+      },
+      {
+        "q": "Name a month with 30 days.",
+        "a": ["April", "June", "September", "November"]
+      },
+    ];
+
+    final item = questions[(level - 1) % questions.length];
+
     return [
       RapidFireChallengeModel(
         id: 'rf_${level}_0',
-        question: 'Name a fruit that is red.',
-        acceptableAnswers: ['Apple', 'Strawberry', 'Cherry', 'Tomato'],
-        timeLimitSeconds: 5,
+        question: item['q'] as String,
+        acceptableAnswers: item['a'] as List<String>,
+        timeLimitSeconds: 7, // Slightly increased base time
       )
     ];
   }

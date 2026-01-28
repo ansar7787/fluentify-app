@@ -33,6 +33,11 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         gameLevel: event.gameLevel,
         grammarLevel: event.grammarLevel,
         speakingLevel: event.speakingLevel,
+        wordMatchLevel: event.wordMatchLevel,
+        typingLevel: event.typingLevel,
+        dictationLevel: event.dictationLevel,
+        readingLevel: event.readingLevel,
+        rapidFireLevel: event.rapidFireLevel,
       );
 
       result.fold(

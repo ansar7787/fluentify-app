@@ -22,7 +22,18 @@ class UpdateUserProfileEvent extends UserEvent {
     this.gameLevel,
     this.grammarLevel,
     this.speakingLevel,
+    this.wordMatchLevel,
+    this.typingLevel,
+    this.dictationLevel,
+    this.readingLevel,
+    this.rapidFireLevel,
   });
+
+  final int? wordMatchLevel;
+  final int? typingLevel;
+  final int? dictationLevel;
+  final int? readingLevel;
+  final int? rapidFireLevel;
 
   @override
   List<Object?> get props => [
@@ -31,5 +42,10 @@ class UpdateUserProfileEvent extends UserEvent {
         gameLevel,
         grammarLevel,
         speakingLevel,
+        wordMatchLevel,
+        typingLevel,
+        dictationLevel,
+        readingLevel,
+        rapidFireLevel,
       ];
 }
