@@ -16,6 +16,7 @@ import '../../../../features/user/presentation/bloc/leaderboard_event.dart';
 import '../../../../features/user/presentation/bloc/leaderboard_state.dart';
 import '../../../../features/auth/domain/entities/user_entity.dart';
 import 'rapid_fire_levels_page.dart';
+import 'game_levels_page.dart';
 
 class GameHomePage extends StatefulWidget {
   const GameHomePage({super.key});
@@ -184,6 +185,13 @@ class _GameHomePageState extends State<GameHomePage> {
         icon: Icons.mic_rounded,
         color: Colors.teal,
         page: const SpeakingLevelsPage(),
+      ),
+      _GameItem(
+        title: 'Sentence Master',
+        description: 'Unscramble words to build sentences.',
+        icon: Icons.sort_by_alpha_rounded,
+        color: Colors.indigo,
+        page: const GameLevelsPage(gameMode: 'scramble'),
       ),
     ];
 
