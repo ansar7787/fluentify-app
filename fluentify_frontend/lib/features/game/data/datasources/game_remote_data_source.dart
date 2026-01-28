@@ -1,12 +1,4 @@
 import 'package:dio/dio.dart';
-import '../../domain/entities/grammar_level_entity.dart';
-import '../../domain/entities/speaking_level_entity.dart';
-import '../../domain/entities/scramble_level_entity.dart';
-import '../../domain/entities/word_match_level_entity.dart';
-import '../../domain/entities/typing_level_entity.dart';
-import '../../domain/entities/dictation_level_entity.dart';
-import '../../domain/entities/reading_level_entity.dart';
-import '../../domain/entities/rapid_fire_level_entity.dart';
 
 import '../models/grammar_level_model.dart';
 import '../models/grammar_challenge_model.dart';

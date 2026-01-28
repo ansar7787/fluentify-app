@@ -31,6 +31,8 @@ import 'package:fluentify/features/user/domain/usecases/get_user_rank_usecase.da
 import 'package:fluentify/features/user/domain/usecases/update_profile_usecase.dart';
 import 'package:fluentify/features/peer/presentation/bloc/peer_bloc.dart';
 import 'package:fluentify/core/theme/theme_cubit.dart';
+import 'package:fluentify/core/network/bloc/network_bloc.dart';
+import 'package:fluentify/core/widgets/no_internet_screen.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -97,6 +99,7 @@ class FluentifyApp extends StatelessWidget {
         BlocProvider(
           create: (_) => PeerBloc(),
         ),
+        BlocProvider(create: (_) => NetworkBloc()..add(NetworkObserve())),
       ],
       child: ScreenUtilInit(
         designSize: const Size(375, 812), // Standard iPhone size
@@ -113,6 +116,16 @@ class FluentifyApp extends StatelessWidget {
                 themeMode: themeMode,
                 initialRoute: AppRoutes.splash,
                 routes: AppRoutes.routes,
+                builder: (context, child) {
+                  return BlocBuilder<NetworkBloc, NetworkState>(
+                    builder: (context, state) {
+                      if (state is NetworkFailure) {
+                        return const NoInternetScreen();
+                      }
+                      return child!;
+                    },
+                  );
+                },
               );
             },
           );
