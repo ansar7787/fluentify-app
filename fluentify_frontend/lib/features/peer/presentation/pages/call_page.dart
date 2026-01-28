@@ -2,11 +2,14 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../../chat/presentation/pages/chat_page.dart';
+
 class CallPage extends StatefulWidget {
   final String channelId;
   final String token;
   final int uid;
   final String peerName;
+  final String currentUserName;
 
   const CallPage({
     super.key,
@@ -14,6 +17,7 @@ class CallPage extends StatefulWidget {
     required this.token,
     required this.uid,
     required this.peerName,
+    required this.currentUserName,
   });
 
   @override
@@ -168,9 +172,19 @@ class _CallPageState extends State<CallPage> {
                     onTap: _onEndCall,
                   ),
                   _buildCallControl(
-                    icon: Icons.volume_up,
+                    icon: Icons.chat_bubble_rounded,
                     color: Colors.white,
-                    onTap: () {}, // Speaker toggle todo
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ChatPage(
+                            room: widget.channelId,
+                            currentUser: widget.currentUserName,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),

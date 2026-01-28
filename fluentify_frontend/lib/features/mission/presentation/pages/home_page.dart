@@ -17,9 +17,7 @@ import '../../../game/presentation/pages/speaking_levels_page.dart';
 import '../../../game/presentation/pages/word_match_levels_page.dart';
 import '../../../game/presentation/pages/typing_levels_page.dart';
 import '../../../game/presentation/pages/dictation_levels_page.dart';
-import '../../../game/presentation/pages/reading_levels_page.dart';
 import '../../../game/presentation/pages/rapid_fire_levels_page.dart';
-import '../../../game/presentation/pages/game_levels_page.dart';
 import '../../../streak/presentation/pages/streak_page.dart';
 import '../../../../config/theme/app_theme.dart';
 
