@@ -1,0 +1,286 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import '../../domain/entities/booking_entity.dart';
+import '../bloc/mentor_bloc.dart';
+import '../bloc/mentor_event.dart';
+import '../bloc/mentor_state.dart';
+import '../../../../config/theme/app_theme.dart';
+import '../../../../core/di/service_locator.dart';
+import '../../../peer/presentation/pages/call_page.dart'; // Reuse call page for session
+
+class SessionsPage extends StatefulWidget {
+  const SessionsPage({super.key});
+
+  @override
+  State<SessionsPage> createState() => _SessionsPageState();
+}
+
+class _SessionsPageState extends State<SessionsPage>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    context.read<MentorBloc>().add(GetUserBookingsEvent(
+        userId: 'current_user_id')); // In real app get actual ID
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        title: const Text('My Sessions',
+            style: TextStyle(
+                color: Color(0xFF0F172A), fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: false,
+        bottom: TabBar(
+          controller: _tabController,
+          labelColor: AppTheme.accentBlue,
+          unselectedLabelColor: Colors.grey,
+          indicatorColor: AppTheme.accentBlue,
+          indicatorWeight: 3,
+          labelStyle:
+              const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          tabs: const [
+            Tab(text: 'Upcoming'),
+            Tab(text: 'History'),
+          ],
+        ),
+      ),
+      body: BlocBuilder<MentorBloc, MentorState>(
+        builder: (context, state) {
+          if (state is MentorLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is MentorLoaded) {
+            // Filter bookings
+            final now = DateTime.now();
+            final upcoming = state.bookings
+                .where((b) =>
+                    b.scheduledAt.isAfter(now) && b.status != 'cancelled')
+                .toList();
+            final history = state.bookings
+                .where((b) =>
+                    b.scheduledAt.isBefore(now) || b.status == 'cancelled')
+                .toList();
+
+            // Sort
+            upcoming.sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
+            history.sort((a, b) => b.scheduledAt.compareTo(a.scheduledAt));
+
+            return TabBarView(
+              controller: _tabController,
+              children: [
+                _buildSessionList(upcoming, isUpcoming: true),
+                _buildSessionList(history, isUpcoming: false),
+              ],
+            );
+          } else if (state is MentorError) {
+            return Center(
+                child: Text("Failed to load sessions: ${state.message}"));
+          }
+          return const Center(child: Text("No sessions found."));
+        },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          // Navigate to Mentor/Booking find page
+          // Navigator.pushNamed(context, '/mentors');
+        },
+        backgroundColor: AppTheme.accentBlue,
+        icon: const Icon(Icons.add_rounded),
+        label: const Text("Book New"),
+      ),
+    );
+  }
+
+  Widget _buildSessionList(List<BookingEntity> bookings,
+      {required bool isUpcoming}) {
+    if (bookings.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+                isUpcoming
+                    ? Icons.event_busy_rounded
+                    : Icons.history_edu_rounded,
+                size: 60,
+                color: Colors.grey[300]),
+            const SizedBox(height: 16),
+            Text(
+              isUpcoming ? "No upcoming sessions" : "No session history",
+              style: TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      itemCount: bookings.length,
+      itemBuilder: (context, index) {
+        final booking = bookings[index];
+        return _buildSessionCard(booking, isUpcoming)
+            .animate(delay: (index * 100).ms)
+            .fadeIn()
+            .slideY();
+      },
+    );
+  }
+
+  Widget _buildSessionCard(BookingEntity booking, bool isUpcoming) {
+    final date = DateFormat('MMM d, y').format(booking.scheduledAt);
+    final time = DateFormat('jm').format(booking.scheduledAt);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            decoration: BoxDecoration(
+              color: isUpcoming
+                  ? AppTheme.accentBlue.withOpacity(0.1)
+                  : Colors.grey[100],
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.calendar_month_rounded,
+                        color: isUpcoming ? AppTheme.accentBlue : Colors.grey,
+                        size: 18),
+                    const SizedBox(width: 8),
+                    Text(
+                      "$date • $time",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color:
+                            isUpcoming ? AppTheme.accentBlue : Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    "${booking.durationMinutes} min",
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+                )
+              ],
+            ),
+          ),
+
+          // Body
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                // Avatar
+                CircleAvatar(
+                  radius: 28,
+                  backgroundColor: Colors.grey[200],
+                  child: const Icon(Icons.person_rounded,
+                      size: 32, color: Colors.grey),
+                  // backgroundImage: NetworkImage(booking.mentorAvatar), // if available
+                ),
+                const SizedBox(width: 16),
+
+                // Details
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Mentor Session", // Replace with mentor name
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        booking.status.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: booking.status == 'scheduled'
+                              ? Colors.green
+                              : Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Action Button
+                if (isUpcoming)
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.accentBlue,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      elevation: 0,
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => CallPage(
+                                    channelId:
+                                        booking.meetingLink ?? 'demo_channel',
+                                    token:
+                                        '', // Fetch token in real app or use temp
+                                    uid: 0, // Random or user ID
+                                    peerName: "Mentor",
+                                    currentUserName: "Me",
+                                  )));
+                    },
+                    child: const Text("Join",
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold)),
+                  )
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
