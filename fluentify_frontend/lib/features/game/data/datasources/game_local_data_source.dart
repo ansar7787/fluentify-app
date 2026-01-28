@@ -88,7 +88,7 @@ class GameLocalDataSourceImpl implements GameLocalDataSource {
           SentenceChallengeModel(
             id: 'scr_1_1',
             correctSentence: 'The cat sleeps on the mat',
-            scrambledWords: ['cat', 'mat', 'on', 'The', 'sleeps', 'the'],
+            shuffledWords: ['cat', 'mat', 'on', 'The', 'sleeps', 'the'],
             hint: 'Start with "The"',
             difficulty: 'Beginner',
           )
@@ -103,10 +103,11 @@ class GameLocalDataSourceImpl implements GameLocalDataSource {
       WordMatchLevelModel(level: 1, title: 'Basic Vocabulary', challenges: [
         WordMatchChallengeModel(
             id: 'wm_1_1',
+            instruction: 'Match the words.',
             pairs: [
-              WordPairModel(id: 'wp1', word: 'Happy', match: 'Joyful'),
-              WordPairModel(id: 'wp2', word: 'Sad', match: 'Unhappy'),
-              WordPairModel(id: 'wp3', word: 'Big', match: 'Large'),
+              WordPairModel(word: 'Happy', match: 'Joyful'),
+              WordPairModel(word: 'Sad', match: 'Unhappy'),
+              WordPairModel(word: 'Big', match: 'Large'),
             ],
             difficulty: 'Beginner')
       ])
@@ -119,7 +120,8 @@ class GameLocalDataSourceImpl implements GameLocalDataSource {
       TypingLevelModel(level: 1, title: 'Fast Fingers', challenges: [
         TypingChallengeModel(
             id: 't_1_1',
-            text: 'The quick brown fox jumps over the lazy dog.',
+            textToType: 'The quick brown fox jumps over the lazy dog.',
+            timeLimitSeconds: 60,
             difficulty: 'Beginner')
       ])
     ];
@@ -131,7 +133,8 @@ class GameLocalDataSourceImpl implements GameLocalDataSource {
       DictationLevelModel(level: 1, title: 'Listen Up', challenges: [
         DictationChallengeModel(
             id: 'd_1_1',
-            sentence: 'Hello world',
+            correctText: 'Hello world',
+            hint: 'Common greeting',
             audioUrl: 'https://example.com/audio.mp3', // Placeholder
             difficulty: 'Beginner')
       ])
@@ -144,6 +147,7 @@ class GameLocalDataSourceImpl implements GameLocalDataSource {
       ReadingLevelModel(level: 1, title: 'Short Story', challenges: [
         ReadingChallengeModel(
             id: 'r_1_1',
+            title: 'Tom and the Cat',
             passage: 'Tom has a cat. The cat is black.',
             question: 'What color is the cat?',
             options: ['Black', 'White', 'Blue'],
@@ -160,9 +164,7 @@ class GameLocalDataSourceImpl implements GameLocalDataSource {
         RapidFireChallengeModel(
             id: 'rf_1_1',
             question: 'Opposite of Up?',
-            correctAnswer: 'Down',
-            options: ['Down', 'Left', 'Right'],
-            durationSeconds: 5,
+            acceptableAnswers: ['Down', 'down'],
             difficulty: 'Beginner')
       ])
     ];
