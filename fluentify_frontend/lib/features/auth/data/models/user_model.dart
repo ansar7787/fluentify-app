@@ -20,6 +20,7 @@ class UserModel extends UserEntity {
     super.rapidFireLevel = 1,
     super.subscriptionPlan = 'free',
     super.subscriptionExpiry,
+    super.role = 'user',
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -44,6 +45,7 @@ class UserModel extends UserEntity {
       subscriptionExpiry: json['subscriptionExpiry'] != null
           ? DateTime.parse(json['subscriptionExpiry'])
           : null,
+      role: json['role'] ?? 'user',
     );
   }
 
@@ -67,6 +69,7 @@ class UserModel extends UserEntity {
       'rapidFireLevel': rapidFireLevel,
       'subscriptionPlan': subscriptionPlan,
       'subscriptionExpiry': subscriptionExpiry?.toIso8601String(),
+      'role': role,
     };
   }
 }

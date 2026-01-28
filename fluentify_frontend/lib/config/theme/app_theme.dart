@@ -5,6 +5,7 @@ class AppTheme {
   static const Color secondaryGreen = Color(0xFF2ECC71);
   static const Color accentBlue = Color(0xFF3498DB);
   static const Color darkBg = Color(0xFF121212);
+  static const Color scaffoldBg = Color(0xFF121212);
   static const Color cardBg = Color(0xFF1E1E1E);
 
   // Premium Auth Colors

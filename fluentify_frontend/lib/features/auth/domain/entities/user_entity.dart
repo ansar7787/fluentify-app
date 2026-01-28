@@ -14,6 +14,7 @@ class UserEntity extends Equatable {
   final int speakingLevel;
   final String subscriptionPlan;
   final DateTime? subscriptionExpiry;
+  final String role;
 
   const UserEntity({
     required this.id,
@@ -34,6 +35,7 @@ class UserEntity extends Equatable {
     this.rapidFireLevel = 1,
     this.subscriptionPlan = 'free',
     this.subscriptionExpiry,
+    this.role = 'user',
   });
 
   final int wordMatchLevel;
@@ -64,5 +66,6 @@ class UserEntity extends Equatable {
         rapidFireLevel,
         subscriptionPlan,
         subscriptionExpiry,
+        role,
       ];
 }

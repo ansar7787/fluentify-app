@@ -79,12 +79,28 @@ class _StreakPageState extends State<StreakPage> {
                   bool isCurrent = day == streakCount + 1;
                   bool isFuture = day > streakCount + 1;
 
-                  return _buildPathNode(
-                      day, alignX, isCompleted, isCurrent, isFuture);
+                  return Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Line to NEXT node (if exists)
+                      if (day < totalDays)
+                        CustomPaint(
+                          painter: StreakLinePainter(
+                            isRightToLeft: day % 2 == 0,
+                            isCompleted: day <
+                                streakCount, // Line is completed if both nodes are completed
+                          ),
+                          child: SizedBox(height: 80.h, width: 200.w),
+                        ),
+
+                      _buildPathNode(
+                          day, alignX, isCompleted, isCurrent, isFuture),
+                    ],
+                  );
                 },
               ),
 
-              // Floating Info Card (Static for now, could be dynamic)
+              // Floating Info Card
               if (streakCount > 0)
                 Positioned(
                   top: 100.h,
@@ -100,89 +116,53 @@ class _StreakPageState extends State<StreakPage> {
 
   Widget _buildPathNode(
       int day, double alignX, bool isCompleted, bool isCurrent, bool isFuture) {
-    // Offset for zigzag
     return Align(
       alignment: Alignment(alignX, 0),
-      child: Column(
-        children: [
-          // Dashed Line Connector (simplified)
-          if (day >
-              1) // Don't show line below day 1 (since list is reversed? wait list is reversed meaning index 0 is Day 1 (bottom).
-            // Actually list is reversed so index 0 is Day 1.
-            // But we want Day 1 at bottom.
-            // If reverse: true, index 0 is at bottom of screen.
-            // So day 1 is at bottom. Line should go UP to day 2.
-            // In ListView, item index+1 is visually above item index.
-            // So we need line ABOVE this node?
-            // Actually, let's just draw the node. The line logic is complex in ListView.
-            // A simpler approach: CustomPaint for lines, but for now let's just use Container lines.
-            // Since it's a zigzag, vertical lines don't look great.
-            // Let's rely on spacing.
-            SizedBox(height: 20.h),
-
-          GestureDetector(
-            onTap: () {
-              // Show details for day
-            },
-            child: Container(
-              width: 80.w,
-              height: 60.h,
-              decoration: BoxDecoration(
-                color: isCompleted
-                    ? const Color(0xFF00ACC1) // Cyan 600
-                    : (isCurrent
-                        ? const Color(0xFF00ACC1)
-                        : const Color(0xFF00ACC1).withOpacity(0.3)),
-                borderRadius: BorderRadius.circular(30.r),
-                boxShadow: [
-                  if (isCompleted || isCurrent)
-                    BoxShadow(
-                      color: const Color(0xFF00838F).withOpacity(0.4),
-                      offset: const Offset(0, 6),
-                      blurRadius: 0, // Solid shadow style
-                    )
-                ],
-                border: isCurrent
-                    ? Border.all(color: Colors.white, width: 3)
-                    : null,
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Day",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10.sp,
-                        fontWeight: FontWeight.w500,
+      child: GestureDetector(
+        onTap: () {},
+        child: Container(
+          width: 70.w,
+          height: 70.w, // Circle
+          margin: EdgeInsets.symmetric(vertical: 5.h), // Spacing for lines
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isCompleted
+                ? const Color(0xFF0D9488) // Teal-ish for done
+                : (isCurrent
+                    ? const Color(0xFFF97316) // Orange for current
+                    : Colors.white),
+            border: Border.all(
+                color: isCurrent
+                    ? Colors.white
+                    : (isCompleted
+                        ? const Color(0xFF0F766E)
+                        : Colors.grey.shade300),
+                width: isCurrent ? 4 : 2),
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4))
+            ],
+          ),
+          child: Center(
+            child:
+                isCompleted // && !isCurrent ? NO, Day 1 done means check mark
+                    ? (day <= 0
+                        ? Text("$day")
+                        : Icon(Icons.check, color: Colors.white, size: 30.sp))
+                    : Text(
+                        "$day",
+                        style: TextStyle(
+                          color: isFuture ? Colors.grey : Colors.white,
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    Text(
-                      "$day",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          )
-              .animate(target: isCurrent ? 1 : 0)
-              .scale(
-                  begin: const Offset(1, 1),
-                  end: const Offset(1.1, 1.1),
-                  duration: 1000.ms,
-                  curve: Curves.easeInOut)
-              .then()
-              .scale(
-                  begin: const Offset(1.1, 1.1),
-                  end: const Offset(1.0, 1.0),
-                  duration: 1000.ms),
-        ],
+          ),
+        )
+            .animate(target: isCurrent ? 1 : 0)
+            .scale(begin: const Offset(1, 1), end: const Offset(1.15, 1.15)),
       ),
     );
   }
@@ -218,4 +198,33 @@ class _StreakPageState extends State<StreakPage> {
       ),
     );
   }
+}
+
+class StreakLinePainter extends CustomPainter {
+  final bool isRightToLeft;
+  final bool isCompleted;
+
+  StreakLinePainter({required this.isRightToLeft, required this.isCompleted});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Basic Vertical Line for now to prevent breaking build with complex math
+    final paint = Paint()
+      ..color = isCompleted ? const Color(0xFF0D9488) : Colors.grey.shade300
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    // Draw a simple dashed or solid line connecting vaguely
+    // Center Bottom to Center Top
+    Path path = Path();
+    path.moveTo(size.width / 2, size.height);
+    path.lineTo(size.width / 2, 0);
+
+    // Zigzag logic is hard in strict ListViews, simplified to a vertical connector
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

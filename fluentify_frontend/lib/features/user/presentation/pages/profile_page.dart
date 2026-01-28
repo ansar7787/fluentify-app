@@ -17,6 +17,7 @@ import '../../../../core/theme/theme_cubit.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
+import '../../../auth/domain/entities/user_entity.dart';
 import '../bloc/leaderboard_bloc.dart';
 import '../bloc/leaderboard_event.dart';
 import '../bloc/leaderboard_state.dart';
@@ -170,7 +171,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 .animate()
                                 .fadeIn(delay: 400.ms),
                             SizedBox(height: 16.h),
-                            _buildSettingsSection(textColor, isDark)
+                            _buildSettingsSection(user, textColor, isDark)
                                 .animate()
                                 .fadeIn(delay: 500.ms)
                                 .slideY(begin: 0.1),
@@ -675,10 +676,10 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildSettingsSection(Color textColor, bool isDark) {
+  Widget _buildSettingsSection(UserEntity user, Color textColor, bool isDark) {
     return GlassmorphicContainer(
       width: double.infinity,
-      height: 400.h,
+      height: 480.h, // Increased height to accommodate Admin tile
       borderRadius: 24.r,
       blur: 20,
       alignment: Alignment.center,
@@ -708,6 +709,11 @@ class _ProfilePageState extends State<ProfilePage> {
           _buildSettingsTile('Subscription', Icons.star_rounded,
               AppTheme.primaryYellow, textColor,
               onTap: () => Navigator.pushNamed(context, '/subscription')),
+          // Conditionally render Admin Dashboard
+          if (user.role == 'admin')
+            _buildSettingsTile('Admin Dashboard',
+                Icons.admin_panel_settings_rounded, Colors.redAccent, textColor,
+                onTap: () => Navigator.pushNamed(context, '/admin_dashboard')),
           _buildSettingsTile('Notifications', Icons.notifications_rounded,
               Colors.blueAccent, textColor,
               onTap: () => Navigator.pushNamed(context, '/notifications')),

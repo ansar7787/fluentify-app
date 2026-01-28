@@ -44,6 +44,7 @@ import '../../features/admin/presentation/bloc/admin_bloc.dart';
 import '../services/notification_service.dart';
 
 import '../../features/game/data/datasources/game_local_data_source.dart';
+import '../../features/game/data/datasources/game_remote_data_source.dart';
 import '../../features/game/data/repositories/game_repository_impl.dart';
 import '../../features/game/domain/repositories/game_repository.dart';
 import '../../features/game/domain/usecases/get_grammar_levels_usecase.dart';
@@ -209,8 +210,14 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<GameLocalDataSource>(
     () => GameLocalDataSourceImpl(),
   );
+  getIt.registerLazySingleton<GameRemoteDataSource>(
+    () => GameRemoteDataSourceImpl(getIt<Dio>()),
+  );
   getIt.registerLazySingleton<GameRepository>(
-    () => GameRepositoryImpl(localDataSource: getIt<GameLocalDataSource>()),
+    () => GameRepositoryImpl(
+      localDataSource: getIt<GameLocalDataSource>(),
+      remoteDataSource: getIt<GameRemoteDataSource>(),
+    ),
   );
   getIt.registerLazySingleton(
     () => GetGrammarLevelsUseCase(getIt<GameRepository>()),
