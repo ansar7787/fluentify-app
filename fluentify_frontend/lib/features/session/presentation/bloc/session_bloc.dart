@@ -24,11 +24,17 @@ class SessionLoading extends SessionState {}
 class SessionLoaded extends SessionState {
   final List<SessionEntity> sessions;
   SessionLoaded(this.sessions);
+
+  @override
+  List<Object> get props => [sessions];
 }
 
 class SessionError extends SessionState {
   final String message;
   SessionError(this.message);
+
+  @override
+  List<Object> get props => [message];
 }
 
 // Bloc
@@ -38,12 +44,11 @@ class SessionBloc extends Bloc<SessionEvent, SessionState> {
   SessionBloc({required this.getSessions}) : super(SessionInitial()) {
     on<LoadSessions>((event, emit) async {
       emit(SessionLoading());
-      try {
-        final sessions = await getSessions();
-        emit(SessionLoaded(sessions));
-      } catch (e) {
-        emit(SessionError(e.toString()));
-      }
+      final result = await getSessions();
+      result.fold(
+        (failure) => emit(SessionError(failure.message)),
+        (sessions) => emit(SessionLoaded(sessions)),
+      );
     });
   }
 }

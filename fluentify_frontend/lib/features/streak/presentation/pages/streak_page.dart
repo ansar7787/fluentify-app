@@ -27,10 +27,8 @@ class _StreakPageState extends State<StreakPage> {
         }
 
         // Logic to determine consistency
-        final today = DateTime.now();
         final lastDate = lastPracticeDate ??
             DateTime.now().subtract(const Duration(days: 99));
-        final diff = today.difference(lastDate).inDays;
 
         // If diff > 1 (meaning skipped a day), streak effectively 0 in logic,
         // usually backend resets it. We mostly trust streakCount here.

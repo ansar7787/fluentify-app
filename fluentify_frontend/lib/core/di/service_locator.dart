@@ -72,6 +72,11 @@ import '../../features/session/domain/repositories/session_repository.dart';
 import '../../features/session/domain/usecases/get_sessions_usecase.dart';
 import '../../features/session/presentation/bloc/session_bloc.dart';
 
+import '../../features/peer/domain/repositories/peer_repository.dart';
+import '../../features/peer/data/repositories/peer_repository_impl.dart';
+import '../../features/peer/domain/usecases/peer_usecases.dart';
+import '../../features/peer/presentation/bloc/peer_bloc.dart';
+
 final getIt = GetIt.instance;
 
 Future<void> setupServiceLocator() async {
@@ -297,4 +302,16 @@ Future<void> setupServiceLocator() async {
       () => GetSessionsUseCase(getIt<SessionRepository>()));
   getIt.registerFactory(
       () => SessionBloc(getSessions: getIt<GetSessionsUseCase>()));
+
+  // Peer
+  getIt.registerLazySingleton<PeerRepository>(() => PeerRepositoryImpl());
+  getIt.registerLazySingleton(() => JoinQueueUseCase(getIt<PeerRepository>()));
+  getIt.registerLazySingleton(() => LeaveQueueUseCase(getIt<PeerRepository>()));
+  getIt.registerLazySingleton(
+      () => GetMatchStreamUseCase(getIt<PeerRepository>()));
+  getIt.registerFactory(() => PeerBloc(
+        joinQueueUseCase: getIt<JoinQueueUseCase>(),
+        leaveQueueUseCase: getIt<LeaveQueueUseCase>(),
+        getMatchStreamUseCase: getIt<GetMatchStreamUseCase>(),
+      ));
 }

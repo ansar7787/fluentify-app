@@ -21,14 +21,8 @@ import 'package:fluentify/features/auth/presentation/bloc/auth_event.dart';
 import 'package:fluentify/features/mission/domain/usecases/get_missions_usecase.dart';
 import 'package:fluentify/features/mission/domain/usecases/submit_mission_usecase.dart';
 import 'package:fluentify/features/payment/presentation/bloc/payment_bloc.dart';
-import 'package:fluentify/features/payment/domain/usecases/create_order_usecase.dart';
-import 'package:fluentify/features/payment/domain/usecases/verify_payment_usecase.dart';
 import 'package:fluentify/features/user/presentation/bloc/user_bloc.dart';
 import 'package:fluentify/features/user/presentation/bloc/leaderboard_bloc.dart';
-import 'package:fluentify/features/user/domain/usecases/get_user_profile_usecase.dart';
-import 'package:fluentify/features/user/domain/usecases/get_leaderboard_usecase.dart';
-import 'package:fluentify/features/user/domain/usecases/get_user_rank_usecase.dart';
-import 'package:fluentify/features/user/domain/usecases/update_profile_usecase.dart';
 import 'package:fluentify/features/peer/presentation/bloc/peer_bloc.dart';
 import 'package:fluentify/core/theme/theme_cubit.dart';
 import 'package:fluentify/core/network/bloc/network_bloc.dart';
@@ -79,25 +73,16 @@ class FluentifyApp extends StatelessWidget {
           ),
         ),
         BlocProvider(
-          create: (_) => PaymentBloc(
-            createOrderUseCase: getIt<CreateOrderUseCase>(),
-            verifyPaymentUseCase: getIt<VerifyPaymentUseCase>(),
-          ),
+          create: (_) => getIt<PaymentBloc>(),
         ),
         BlocProvider(
-          create: (_) => UserBloc(
-            getUserProfileUseCase: getIt<GetUserProfileUseCase>(),
-            updateProfileUseCase: getIt<UpdateProfileUseCase>(),
-          ),
+          create: (_) => getIt<UserBloc>(),
         ),
         BlocProvider(
-          create: (_) => LeaderboardBloc(
-            getLeaderboardUseCase: getIt<GetLeaderboardUseCase>(),
-            getUserRankUseCase: getIt<GetUserRankUseCase>(),
-          ),
+          create: (_) => getIt<LeaderboardBloc>(),
         ),
         BlocProvider(
-          create: (_) => PeerBloc(),
+          create: (_) => getIt<PeerBloc>(),
         ),
         BlocProvider(create: (_) => NetworkBloc()..add(NetworkObserve())),
       ],
