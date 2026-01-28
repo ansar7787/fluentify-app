@@ -9,7 +9,6 @@ import '../../../user/presentation/bloc/user_bloc.dart';
 import '../../../user/presentation/bloc/user_event.dart';
 import '../../../user/presentation/bloc/user_state.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../../game/presentation/pages/game_home_page.dart';
 import '../../../game/presentation/pages/grammar_levels_page.dart';
 import '../../../game/presentation/pages/speaking_levels_page.dart';
 import '../../../game/presentation/pages/word_match_levels_page.dart';
@@ -21,8 +20,6 @@ import '../../../game/presentation/pages/game_levels_page.dart'; // 8th Game
 import '../../../streak/presentation/pages/streak_page.dart'; // Import StreakPage
 import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:ui';
-import '../../domain/entities/mission_entity.dart'; // Actually needed for MissionDetailPage if used
-import 'mission_detail_page.dart'; // Actually needed
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

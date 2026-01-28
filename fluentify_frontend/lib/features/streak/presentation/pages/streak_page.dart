@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../../../user/presentation/bloc/user_bloc.dart';
-import '../../../../user/presentation/bloc/user_state.dart';
+import '../../../user/presentation/bloc/user_bloc.dart';
+import '../../../user/presentation/bloc/user_state.dart';
 
 class StreakPage extends StatefulWidget {
   const StreakPage({super.key});
@@ -25,7 +24,6 @@ class _StreakPageState extends State<StreakPage> {
 
         // Generate data for the path
         final totalDays = 30; // Show a 30-day path for now
-        final currentDay = streakCount % 30 == 0 ? 1 : streakCount % 30;
 
         return Scaffold(
           backgroundColor: const Color(0xFFCFF1F6), // Light Cyan bg
