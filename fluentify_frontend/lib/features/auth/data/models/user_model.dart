@@ -21,6 +21,7 @@ class UserModel extends UserEntity {
     super.subscriptionPlan = 'free',
     super.subscriptionExpiry,
     super.role = 'user',
+    super.lastPracticeDate,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -46,6 +47,9 @@ class UserModel extends UserEntity {
           ? DateTime.parse(json['subscriptionExpiry'])
           : null,
       role: json['role'] ?? 'user',
+      lastPracticeDate: json['lastPracticeDate'] != null
+          ? DateTime.tryParse(json['lastPracticeDate'])
+          : null,
     );
   }
 

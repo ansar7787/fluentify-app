@@ -36,7 +36,10 @@ class UserEntity extends Equatable {
     this.subscriptionPlan = 'free',
     this.subscriptionExpiry,
     this.role = 'user',
+    this.lastPracticeDate,
   });
+
+  final DateTime? lastPracticeDate;
 
   final int wordMatchLevel;
   final int typingLevel;
@@ -67,5 +70,6 @@ class UserEntity extends Equatable {
         subscriptionPlan,
         subscriptionExpiry,
         role,
+        lastPracticeDate,
       ];
 }
