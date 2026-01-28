@@ -14,6 +14,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../game/presentation/pages/game_home_page.dart';
 import '../../../game/presentation/pages/grammar_levels_page.dart';
 import '../../../game/presentation/pages/speaking_levels_page.dart';
+import '../../../game/presentation/pages/word_match_levels_page.dart';
+import '../../../game/presentation/pages/typing_levels_page.dart';
+import '../../../game/presentation/pages/dictation_levels_page.dart';
+import '../../../game/presentation/pages/reading_levels_page.dart';
+import '../../../game/presentation/pages/rapid_fire_levels_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -248,31 +253,46 @@ class _HomePageState extends State<HomePage> {
   Widget _buildGameCarousel(BuildContext context) {
     final games = [
       {
-        'title': 'Arcade Arena',
-        'desc': 'Play mini-games',
-        'color': Colors.indigo,
-        'icon': Icons.games,
-        'page': const GameHomePage()
+        'title': 'Word Match',
+        'desc': 'Connect pairs',
+        'color': const Color(0xFF8B5CF6), // Violet
+        'icon': Icons.extension_rounded,
+        'page': const WordMatchLevelsPage()
       },
       {
-        'title': 'Grammar Quest',
-        'desc': 'Master rules',
-        'color': Colors.purple,
-        'icon': Icons.text_fields,
-        'page': const GrammarLevelsPage()
+        'title': 'Speed Typer',
+        'desc': 'Race against time',
+        'color': const Color(0xFFEC4899), // Pink
+        'icon': Icons.keyboard_rounded,
+        'page': const TypingLevelsPage()
       },
       {
-        'title': 'Fluency Flow',
-        'desc': 'Speak confidently',
-        'color': Colors.teal,
-        'icon': Icons.mic,
-        'page': const SpeakingLevelsPage()
+        'title': 'Diction Master',
+        'desc': 'Perfect speech',
+        'color': const Color(0xFF10B981), // Emerald
+        'icon': Icons.record_voice_over_rounded,
+        'page': const DictationLevelsPage()
+      },
+      {
+        'title': 'Reading Quest',
+        'desc': 'Comprehension',
+        'color': const Color(0xFFF59E0B), // Amber
+        'icon': Icons.menu_book_rounded,
+        'page': const ReadingLevelsPage()
+      },
+      {
+        'title': 'Rapid Fire',
+        'desc': 'Quick quiz',
+        'color': const Color(0xFFEF4444), // Red
+        'icon': Icons.timer_rounded,
+        'page': const RapidFireLevelsPage()
       },
     ];
 
     return SizedBox(
-      height: 200,
+      height: 220,
       child: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         itemCount: games.length,
@@ -285,50 +305,65 @@ class _HomePageState extends State<HomePage> {
                   MaterialPageRoute(builder: (_) => game['page'] as Widget));
             },
             child: Container(
-              width: 160,
+              width: 170,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    (game['color'] as Color).withValues(alpha: 0.8),
+                    (game['color'] as Color).withValues(alpha: 0.9),
                     (game['color'] as Color)
                   ],
                 ),
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(28),
                 boxShadow: [
                   BoxShadow(
                       color: (game['color'] as Color).withValues(alpha: 0.4),
-                      blurRadius: 12,
+                      blurRadius: 16,
                       offset: const Offset(0, 8))
                 ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Stack(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                        color: Colors.white24,
-                        borderRadius: BorderRadius.circular(12)),
-                    child: Icon(game['icon'] as IconData, color: Colors.white),
+                  Positioned(
+                    right: -20,
+                    bottom: -20,
+                    child: Icon(
+                      game['icon'] as IconData,
+                      size: 100,
+                      color: Colors.white.withValues(alpha: 0.1),
+                    ),
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(game['title'] as String,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16)),
-                      const SizedBox(height: 4),
-                      Text(game['desc'] as String,
-                          style: const TextStyle(
-                              color: Colors.white70, fontSize: 12)),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(16)),
+                        child: Icon(game['icon'] as IconData,
+                            color: Colors.white, size: 28),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(game['title'] as String,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18)),
+                          const SizedBox(height: 6),
+                          Text(game['desc'] as String,
+                              style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                  fontSize: 13)),
+                        ],
+                      )
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
