@@ -66,6 +66,12 @@ import '../../features/chat/domain/usecases/send_message_usecase.dart';
 import '../../features/chat/domain/usecases/get_chat_messages_usecase.dart';
 import '../../features/chat/presentation/bloc/chat_bloc.dart';
 
+import '../../features/session/data/datasources/session_remote_data_source.dart';
+import '../../features/session/data/repositories/session_repository_impl.dart';
+import '../../features/session/domain/repositories/session_repository.dart';
+import '../../features/session/domain/usecases/get_sessions_usecase.dart';
+import '../../features/session/presentation/bloc/session_bloc.dart';
+
 final getIt = GetIt.instance;
 
 Future<void> setupServiceLocator() async {
@@ -281,4 +287,14 @@ Future<void> setupServiceLocator() async {
         sendMessage: getIt<SendMessageUseCase>(),
         getChatMessages: getIt<GetChatMessagesUseCase>(),
       ));
+
+  // Session
+  getIt.registerLazySingleton<SessionRemoteDataSource>(
+      () => SessionRemoteDataSourceImpl(getIt<Dio>()));
+  getIt.registerLazySingleton<SessionRepository>(
+      () => SessionRepositoryImpl(getIt<SessionRemoteDataSource>()));
+  getIt.registerLazySingleton(
+      () => GetSessionsUseCase(getIt<SessionRepository>()));
+  getIt.registerFactory(
+      () => SessionBloc(getSessions: getIt<GetSessionsUseCase>()));
 }

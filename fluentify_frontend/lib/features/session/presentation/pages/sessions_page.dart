@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../domain/entities/booking_entity.dart';
-import '../bloc/mentor_bloc.dart';
-import '../bloc/mentor_event.dart';
-import '../bloc/mentor_state.dart';
+// Use the new proper Session Clean Arch
+import '../../domain/entities/session_entity.dart';
+import '../bloc/session_bloc.dart';
 import '../../../../config/theme/app_theme.dart';
 import '../../../../core/di/service_locator.dart';
-import '../../../peer/presentation/pages/call_page.dart'; // Reuse call page for session
+import '../../../peer/presentation/pages/call_page.dart';
 
 class SessionsPage extends StatefulWidget {
   const SessionsPage({super.key});
@@ -25,84 +24,85 @@ class _SessionsPageState extends State<SessionsPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    context.read<MentorBloc>().add(GetUserBookingsEvent(
-        userId: 'current_user_id')); // In real app get actual ID
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        title: const Text('My Sessions',
-            style: TextStyle(
-                color: Color(0xFF0F172A), fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: false,
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppTheme.accentBlue,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: AppTheme.accentBlue,
-          indicatorWeight: 3,
-          labelStyle:
-              const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          tabs: const [
-            Tab(text: 'Upcoming'),
-            Tab(text: 'History'),
-          ],
+    return BlocProvider(
+      create: (context) => getIt<SessionBloc>()..add(LoadSessions()),
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF8FAFC),
+        appBar: AppBar(
+          title: const Text('My Sessions',
+              style: TextStyle(
+                  color: Color(0xFF0F172A), fontWeight: FontWeight.bold)),
+          backgroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: false,
+          bottom: TabBar(
+            controller: _tabController,
+            labelColor: AppTheme.accentBlue,
+            unselectedLabelColor: Colors.grey,
+            indicatorColor: AppTheme.accentBlue,
+            indicatorWeight: 3,
+            labelStyle:
+                const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            tabs: const [
+              Tab(text: 'Upcoming'),
+              Tab(text: 'History'),
+            ],
+          ),
         ),
-      ),
-      body: BlocBuilder<MentorBloc, MentorState>(
-        builder: (context, state) {
-          if (state is MentorLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is MentorLoaded) {
-            // Filter bookings
-            final now = DateTime.now();
-            final upcoming = state.bookings
-                .where((b) =>
-                    b.scheduledAt.isAfter(now) && b.status != 'cancelled')
-                .toList();
-            final history = state.bookings
-                .where((b) =>
-                    b.scheduledAt.isBefore(now) || b.status == 'cancelled')
-                .toList();
+        body: BlocBuilder<SessionBloc, SessionState>(
+          builder: (context, state) {
+            if (state is SessionLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is SessionLoaded) {
+              // Filter sessions
+              final now = DateTime.now();
+              final upcoming = state.sessions
+                  .where((b) =>
+                      b.scheduledAt.isAfter(now) && b.status != 'cancelled')
+                  .toList();
+              final history = state.sessions
+                  .where((b) =>
+                      b.scheduledAt.isBefore(now) || b.status == 'cancelled')
+                  .toList();
 
-            // Sort
-            upcoming.sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
-            history.sort((a, b) => b.scheduledAt.compareTo(a.scheduledAt));
+              // Sort
+              upcoming.sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
+              history.sort((a, b) => b.scheduledAt.compareTo(a.scheduledAt));
 
-            return TabBarView(
-              controller: _tabController,
-              children: [
-                _buildSessionList(upcoming, isUpcoming: true),
-                _buildSessionList(history, isUpcoming: false),
-              ],
-            );
-          } else if (state is MentorError) {
-            return Center(
-                child: Text("Failed to load sessions: ${state.message}"));
-          }
-          return const Center(child: Text("No sessions found."));
-        },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // Navigate to Mentor/Booking find page
-          // Navigator.pushNamed(context, '/mentors');
-        },
-        backgroundColor: AppTheme.accentBlue,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text("Book New"),
+              return TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildSessionList(upcoming, isUpcoming: true),
+                  _buildSessionList(history, isUpcoming: false),
+                ],
+              );
+            } else if (state is SessionError) {
+              return Center(
+                  child: Text("Failed to load sessions: ${state.message}"));
+            }
+            return const Center(child: Text("No sessions found."));
+          },
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
+            // Navigate to Mentor/Booking find page
+            // e.g. Navigator.pushNamed(context, '/mentors');
+          },
+          backgroundColor: AppTheme.accentBlue,
+          icon: const Icon(Icons.add_rounded),
+          label: const Text("Book New"),
+        ),
       ),
     );
   }
 
-  Widget _buildSessionList(List<BookingEntity> bookings,
+  Widget _buildSessionList(List<SessionEntity> sessions,
       {required bool isUpcoming}) {
-    if (bookings.isEmpty) {
+    if (sessions.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -128,10 +128,10 @@ class _SessionsPageState extends State<SessionsPage>
 
     return ListView.builder(
       padding: const EdgeInsets.all(20),
-      itemCount: bookings.length,
+      itemCount: sessions.length,
       itemBuilder: (context, index) {
-        final booking = bookings[index];
-        return _buildSessionCard(booking, isUpcoming)
+        final session = sessions[index];
+        return _buildSessionCard(context, session, isUpcoming)
             .animate(delay: (index * 100).ms)
             .fadeIn()
             .slideY();
@@ -139,9 +139,11 @@ class _SessionsPageState extends State<SessionsPage>
     );
   }
 
-  Widget _buildSessionCard(BookingEntity booking, bool isUpcoming) {
-    final date = DateFormat('MMM d, y').format(booking.scheduledAt);
-    final time = DateFormat('jm').format(booking.scheduledAt);
+  Widget _buildSessionCard(
+      BuildContext context, SessionEntity session, bool isUpcoming) {
+    // Pass context for navigation
+    final date = DateFormat('MMM d, y').format(session.scheduledAt);
+    final time = DateFormat('jm').format(session.scheduledAt);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -195,7 +197,7 @@ class _SessionsPageState extends State<SessionsPage>
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    "${booking.durationMinutes} min",
+                    "${session.durationMinutes} min",
                     style: const TextStyle(
                         fontWeight: FontWeight.bold, fontSize: 12),
                   ),
@@ -213,9 +215,13 @@ class _SessionsPageState extends State<SessionsPage>
                 CircleAvatar(
                   radius: 28,
                   backgroundColor: Colors.grey[200],
-                  child: const Icon(Icons.person_rounded,
-                      size: 32, color: Colors.grey),
-                  // backgroundImage: NetworkImage(booking.mentorAvatar), // if available
+                  child: session.mentorAvatar.isNotEmpty
+                      ? null
+                      : const Icon(Icons.person_rounded,
+                          size: 32, color: Colors.grey),
+                  backgroundImage: session.mentorAvatar.isNotEmpty
+                      ? NetworkImage(session.mentorAvatar)
+                      : null,
                 ),
                 const SizedBox(width: 16),
 
@@ -225,20 +231,28 @@ class _SessionsPageState extends State<SessionsPage>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Mentor Session", // Replace with mentor name
+                        session.title,
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF0F172A),
                         ),
                       ),
+                      Text(
+                        "with ${session.mentorName}",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey[600],
+                        ),
+                      ),
                       const SizedBox(height: 4),
                       Text(
-                        booking.status.toUpperCase(),
+                        session.status.toUpperCase(),
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: booking.status == 'scheduled'
+                          color: session.status == 'active'
                               ? Colors.green
                               : Colors.grey,
                         ),
@@ -264,11 +278,10 @@ class _SessionsPageState extends State<SessionsPage>
                           MaterialPageRoute(
                               builder: (_) => CallPage(
                                     channelId:
-                                        booking.meetingLink ?? 'demo_channel',
-                                    token:
-                                        '', // Fetch token in real app or use temp
-                                    uid: 0, // Random or user ID
-                                    peerName: "Mentor",
+                                        session.meetingId ?? 'demo_channel',
+                                    token: '',
+                                    uid: 0,
+                                    peerName: session.mentorName,
                                     currentUserName: "Me",
                                   )));
                     },
