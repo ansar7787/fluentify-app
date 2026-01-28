@@ -108,4 +108,27 @@ class GameRepositoryImpl implements GameRepository {
       () => localDataSource.getRapidFireLevels(),
     );
   }
+
+  @override
+  Future<Either<Failure, void>> createGameLevel(
+      Map<String, dynamic> levelData) async {
+    try {
+      await remoteDataSource.createGameLevel(levelData);
+      return const Right(null);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<dynamic>>> generateAiContent(
+      String gameType, String topic, String level) async {
+    try {
+      final content =
+          await remoteDataSource.generateAiContent(gameType, topic, level);
+      return Right(content);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }

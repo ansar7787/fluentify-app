@@ -10,6 +10,7 @@ import '../../features/user/presentation/pages/personal_profile_page.dart';
 import '../../features/user/presentation/pages/learning_goals_page.dart';
 import '../../features/user/presentation/pages/notifications_page.dart';
 import '../../features/admin/presentation/pages/admin_dashboard_page.dart';
+import '../../features/admin/presentation/pages/admin_level_editor_page.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
 
 class AppRoutes {
@@ -25,6 +26,7 @@ class AppRoutes {
   static const String learningGoals = '/learning_goals';
   static const String notifications = '/notifications';
   static const String adminDashboard = '/admin_dashboard';
+  static const String adminLevelEditor = '/admin_level_editor';
 
   static Map<String, WidgetBuilder> get routes => {
         splash: (context) => const SplashScreen(),
@@ -39,5 +41,6 @@ class AppRoutes {
         learningGoals: (context) => const LearningGoalsPage(),
         notifications: (context) => const NotificationsPage(),
         adminDashboard: (context) => const AdminDashboardPage(),
+        adminLevelEditor: (context) => const AdminLevelEditorPage(),
       };
 }

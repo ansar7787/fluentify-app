@@ -29,6 +29,11 @@ abstract class GameRemoteDataSource {
   Future<List<DictationLevelModel>> getDictationLevels();
   Future<List<ReadingLevelModel>> getReadingLevels();
   Future<List<RapidFireLevelModel>> getRapidFireLevels();
+
+  // Admin methods
+  Future<void> createGameLevel(Map<String, dynamic> levelData);
+  Future<List<dynamic>> generateAiContent(
+      String gameType, String topic, String level);
 }
 
 class GameRemoteDataSourceImpl implements GameRemoteDataSource {
@@ -47,6 +52,23 @@ class GameRemoteDataSourceImpl implements GameRemoteDataSource {
       // If server fails or no data, rethrow to trigger fallback
       throw e;
     }
+  }
+
+  @override
+  Future<void> createGameLevel(Map<String, dynamic> levelData) async {
+    await dio.post('/game/levels', data: levelData);
+  }
+
+  @override
+  Future<List<dynamic>> generateAiContent(
+      String gameType, String topic, String level) async {
+    final response = await dio.post('/ai/generate', data: {
+      'gameType': gameType,
+      'topic': topic,
+      'level': level,
+      'count': 5, // Defaulting to 5 for now
+    });
+    return response.data as List<dynamic>;
   }
 
   @override
