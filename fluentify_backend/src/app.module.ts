@@ -13,6 +13,7 @@ import { MentorModule } from './modules/mentor/mentor.module';
 import { SessionModule } from './modules/session/session.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { GameModule } from './modules/game/game.module';
 
 @Module({
   imports: [
@@ -43,12 +44,12 @@ import { ChatModule } from './modules/chat/chat.module';
     UserModule,
     MissionModule,
     PaymentModule,
-    PaymentModule,
     PeerModule,
     MentorModule,
     SessionModule,
     AdminModule,
     ChatModule,
+    GameModule,
   ],
   controllers: [],
   providers: [],
