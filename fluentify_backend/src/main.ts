@@ -3,8 +3,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
+import { ApiResponseInterceptor } from './common/interceptors/api-response.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -20,6 +20,9 @@ async function bootstrap() {
   app.use(require('express').json({ limit: '50mb' }));
   app.use(require('express').urlencoded({ limit: '50mb', extended: true }));
 
+  // Global Interceptor
+  app.useGlobalInterceptors(new ApiResponseInterceptor());
+
   // Validation
   app.useGlobalPipes(
     new ValidationPipe({
@@ -34,8 +37,8 @@ async function bootstrap() {
 
   // Swagger
   const config = new DocumentBuilder()
-    .setTitle('SpeakPay API')
-    .setDescription('SpeakPay - English Speaking Learning App')
+    .setTitle('Fluentify API')
+    .setDescription('Fluentify - AI English Learning Platform')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

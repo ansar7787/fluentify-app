@@ -12,8 +12,9 @@ import { PeerModule } from './modules/peer/peer.module';
 import { MentorModule } from './modules/mentor/mentor.module';
 import { SessionModule } from './modules/session/session.module';
 import { AdminModule } from './modules/admin/admin.module';
-import { ChatModule } from './modules/chat/chat.module';
+import { ChatModule } from './chat/chat.module';
 import { GameModule } from './modules/game/game.module';
+import { AiModule } from './modules/ai/ai.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { GameModule } from './modules/game/game.module';
     AdminModule,
     ChatModule,
     GameModule,
+    AiModule,
   ],
   controllers: [],
   providers: [],

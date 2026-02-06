@@ -17,30 +17,39 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         const response = ctx.getResponse<Response>();
         const request = ctx.getRequest<Request>();
 
+        const isProduction = process.env.NODE_ENV === 'production';
+
         const status =
             exception instanceof HttpException
                 ? exception.getStatus()
                 : HttpStatus.INTERNAL_SERVER_ERROR;
 
-        const message =
-            exception instanceof HttpException
-                ? exception.getResponse()
-                : (exception as any).message || 'Internal server error';
+        let errorResponse: any;
+        if (exception instanceof HttpException) {
+            const resp = exception.getResponse();
+            errorResponse = typeof resp === 'object' ? resp : { message: resp };
+        } else {
+            errorResponse = {
+                message: (exception as any).message || 'Internal server error',
+                error: 'Internal Server Error',
+            };
+        }
 
         const stack = (exception as any).stack;
 
         this.logger.error(
-            `HTTP ${status} Error: ${JSON.stringify(message)}`,
+            `${request.method} ${request.url} ${status} - Error: ${JSON.stringify(errorResponse)}`,
             stack,
         );
 
         response.status(status).json({
+            success: false,
             statusCode: status,
             timestamp: new Date().toISOString(),
             path: request.url,
-            message: message,
-            debugError: (exception as any).message, // Expose error message for debugging
-            stack: stack, // Expose stack trace for debugging (remove in real prod)
+            message: errorResponse.message || 'Internal server error',
+            error: errorResponse.error || (status === 500 ? 'Internal Server Error' : undefined),
+            ...(isProduction ? {} : { stack, originalError: (exception as any).message }),
         });
     }
 }

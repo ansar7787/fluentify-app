@@ -76,6 +76,11 @@ import '../../features/peer/domain/repositories/peer_repository.dart';
 import '../../features/peer/data/repositories/peer_repository_impl.dart';
 import '../../features/peer/domain/usecases/peer_usecases.dart';
 import '../../features/peer/presentation/bloc/peer_bloc.dart';
+import '../../features/speaking_coach/data/datasources/speaking_coach_remote_datasource.dart';
+import '../../features/speaking_coach/data/repositories/speaking_coach_repository_impl.dart';
+import '../../features/speaking_coach/domain/repositories/speaking_coach_repository.dart';
+import '../../features/speaking_coach/domain/usecases/analyze_speaking_usecase.dart';
+import '../../features/speaking_coach/presentation/bloc/speaking_coach_bloc.dart';
 
 final getIt = GetIt.instance;
 
@@ -314,4 +319,22 @@ Future<void> setupServiceLocator() async {
         leaveQueueUseCase: getIt<LeaveQueueUseCase>(),
         getMatchStreamUseCase: getIt<GetMatchStreamUseCase>(),
       ));
+
+  // Speaking Coach
+  getIt.registerLazySingleton<SpeakingCoachRemoteDataSource>(
+    () => SpeakingCoachRemoteDataSourceImpl(getIt<Dio>()),
+  );
+  getIt.registerLazySingleton<SpeakingCoachRepository>(
+    () => SpeakingCoachRepositoryImpl(
+      remoteDataSource: getIt<SpeakingCoachRemoteDataSource>(),
+    ),
+  );
+  getIt.registerLazySingleton(
+    () => AnalyzeSpeakingUseCase(getIt<SpeakingCoachRepository>()),
+  );
+  getIt.registerFactory(
+    () => SpeakingCoachBloc(
+      analyzeSpeakingUseCase: getIt<AnalyzeSpeakingUseCase>(),
+    ),
+  );
 }
