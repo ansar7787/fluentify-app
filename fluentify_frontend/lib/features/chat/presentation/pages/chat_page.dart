@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/di/service_locator.dart';
 import '../bloc/chat_bloc.dart';
 import '../../../../config/theme/app_theme.dart';
+import '../../../../core/theme/app_colors.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class ChatPage extends StatelessWidget {
   final String room;
@@ -34,10 +37,10 @@ class _ChatViewState extends State<ChatView> {
   final ScrollController _scrollController = ScrollController();
 
   void _sendMessage() {
-    if (_controller.text.isEmpty) return;
+    if (_controller.text.trim().isEmpty) return;
     context.read<ChatBloc>().add(ChatSendMessage(
           room: widget.room,
-          message: _controller.text,
+          message: _controller.text.trim(),
           sender: widget.currentUser,
           senderId: widget.currentUser,
         ));
@@ -56,14 +59,28 @@ class _ChatViewState extends State<ChatView> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
+      backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
       appBar: AppBar(
-        title: Text(widget.room == 'global' ? 'Community Chat' : 'Chat Room'),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        foregroundColor: Colors.black,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(widget.room == 'global' ? 'Community Chat' : 'Chat Room',
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18.sp)),
+            Text('Online members',
+                style: TextStyle(
+                    fontSize: 12.sp,
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500)),
+          ],
+        ),
+        backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
+        elevation: 0.5,
+        foregroundColor: isDark ? Colors.white : AppColors.textHeadline,
+        centerTitle: false,
       ),
-      backgroundColor: const Color(0xFFF8FAFC),
       body: Column(
         children: [
           Expanded(
@@ -76,63 +93,35 @@ class _ChatViewState extends State<ChatView> {
               },
               builder: (context, state) {
                 if (state is ChatLoaded) {
+                  if (state.messages.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.chat_bubble_outline_rounded,
+                              size: 64.w,
+                              color: AppColors.textSecondary
+                                  .withValues(alpha: 0.2)),
+                          SizedBox(height: 16.h),
+                          Text('No messages yet.\nStart the conversation!',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 16.sp,
+                                  height: 1.4)),
+                        ],
+                      ),
+                    );
+                  }
                   return ListView.builder(
                     controller: _scrollController,
-                    padding: const EdgeInsets.all(16),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
                     itemCount: state.messages.length,
                     itemBuilder: (context, index) {
                       final msg = state.messages[index];
                       final isMe = msg.senderName == widget.currentUser;
-                      return Align(
-                        alignment:
-                            isMe ? Alignment.centerRight : Alignment.centerLeft,
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(vertical: 4),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: isMe ? AppTheme.accentBlue : Colors.white,
-                            borderRadius: BorderRadius.only(
-                              topLeft: const Radius.circular(16),
-                              topRight: const Radius.circular(16),
-                              bottomLeft: isMe
-                                  ? const Radius.circular(16)
-                                  : const Radius.circular(0),
-                              bottomRight: isMe
-                                  ? const Radius.circular(0)
-                                  : const Radius.circular(16),
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withValues(alpha: 0.1),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              )
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (!isMe)
-                                Text(
-                                  msg.senderName,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                              Text(
-                                msg.content,
-                                style: TextStyle(
-                                  color: isMe ? Colors.white : Colors.black87,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
+                      return _buildMessageBubble(msg, isMe, isDark);
                     },
                   );
                 }
@@ -140,45 +129,134 @@ class _ChatViewState extends State<ChatView> {
               },
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            color: Colors.white,
-            child: SafeArea(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      decoration: InputDecoration(
-                        hintText: "Type a message...",
-                        filled: true,
-                        fillColor: Colors.grey[100],
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 14),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: _sendMessage,
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: const BoxDecoration(
-                        color: AppTheme.accentBlue,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.send_rounded,
-                          color: Colors.white, size: 20),
-                    ),
-                  ),
-                ],
+          _buildMessageInput(isDark),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageBubble(dynamic msg, bool isMe, bool isDark) {
+    return Align(
+      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: Column(
+        crossAxisAlignment:
+            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          if (!isMe)
+            Padding(
+              padding: EdgeInsets.only(left: 4.w, bottom: 4.h),
+              child: Text(
+                msg.senderName,
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textSecondary,
+                ),
               ),
             ),
+          Container(
+            margin: EdgeInsets.only(bottom: 12.h),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+            constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.75),
+            decoration: BoxDecoration(
+              gradient: isMe ? AppColors.primaryGradient : null,
+              color:
+                  isMe ? null : (isDark ? AppColors.darkSurface : Colors.white),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20.r),
+                topRight: Radius.circular(20.r),
+                bottomLeft: isMe ? Radius.circular(20.r) : Radius.circular(0),
+                bottomRight: isMe ? Radius.circular(0) : Radius.circular(20.r),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                )
+              ],
+            ),
+            child: Text(
+              msg.content,
+              style: TextStyle(
+                color: isMe
+                    ? Colors.white
+                    : (isDark ? Colors.white : AppColors.textHeadline),
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w500,
+                height: 1.4,
+              ),
+            ),
+          ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, end: 0),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageInput(bool isDark) {
+    return Container(
+      padding: EdgeInsets.only(
+          left: 16.w,
+          right: 16.w,
+          top: 12.h,
+          bottom: MediaQuery.of(context).padding.bottom + 12.h),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
           )
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkBackground : Colors.grey[100],
+                borderRadius: BorderRadius.circular(28.r),
+                border: Border.all(
+                    color: isDark ? Colors.white10 : Colors.transparent),
+              ),
+              child: TextField(
+                controller: _controller,
+                style: TextStyle(fontSize: 15.sp),
+                decoration: InputDecoration(
+                  hintText: "Type a message...",
+                  hintStyle: TextStyle(
+                      color: AppColors.textSecondary.withValues(alpha: 0.6),
+                      fontSize: 15.sp),
+                  border: InputBorder.none,
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                ),
+                onSubmitted: (_) => _sendMessage(),
+              ),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          GestureDetector(
+            onTap: _sendMessage,
+            child: Container(
+              height: 48.w,
+              width: 48.w,
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  )
+                ],
+              ),
+              child: Icon(Icons.send_rounded, color: Colors.white, size: 22.w),
+            ),
+          ),
         ],
       ),
     );
