@@ -15,6 +15,7 @@ import { AdminModule } from './modules/admin/admin.module';
 import { ChatModule } from './chat/chat.module';
 import { GameModule } from './modules/game/game.module';
 import { AiModule } from './modules/ai/ai.module';
+import { SpeakingPartnerModule } from './modules/speaking-partner/speaking-partner.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { AiModule } from './modules/ai/ai.module';
     ChatModule,
     GameModule,
     AiModule,
+    SpeakingPartnerModule,
   ],
   controllers: [],
   providers: [],

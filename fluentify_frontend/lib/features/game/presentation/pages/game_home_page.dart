@@ -17,6 +17,7 @@ import '../../../../features/user/presentation/bloc/leaderboard_state.dart';
 import '../../../../features/auth/domain/entities/user_entity.dart';
 import 'rapid_fire_levels_page.dart';
 import 'game_levels_page.dart';
+import '../../../../features/speaking_partner/presentation/pages/scenario_selection_page.dart';
 
 class GameHomePage extends StatefulWidget {
   const GameHomePage({super.key});
@@ -185,6 +186,13 @@ class _GameHomePageState extends State<GameHomePage> {
         icon: Icons.mic_rounded,
         color: Colors.teal,
         page: const SpeakingLevelsPage(),
+      ),
+      _GameItem(
+        title: 'AI Partner',
+        description: 'Real-time conversation practice.',
+        icon: Icons.forum_rounded,
+        color: const Color(0xFF3B82F6), // Blue
+        page: const ScenarioSelectionPage(),
       ),
       _GameItem(
         title: 'Sentence Master',

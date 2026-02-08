@@ -27,6 +27,7 @@ import 'package:fluentify/features/peer/presentation/bloc/peer_bloc.dart';
 import 'package:fluentify/core/theme/theme_cubit.dart';
 import 'package:fluentify/core/network/bloc/network_bloc.dart';
 import 'package:fluentify/core/widgets/no_internet_screen.dart';
+import 'package:fluentify/features/speaking_partner/presentation/bloc/speaking_partner_bloc.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -83,6 +84,9 @@ class FluentifyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (_) => getIt<PeerBloc>(),
+        ),
+        BlocProvider(
+          create: (_) => getIt<SpeakingPartnerBloc>(),
         ),
         BlocProvider(create: (_) => NetworkBloc()..add(NetworkObserve())),
       ],

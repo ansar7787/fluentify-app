@@ -81,6 +81,12 @@ import '../../features/speaking_coach/data/repositories/speaking_coach_repositor
 import '../../features/speaking_coach/domain/repositories/speaking_coach_repository.dart';
 import '../../features/speaking_coach/domain/usecases/analyze_speaking_usecase.dart';
 import '../../features/speaking_coach/presentation/bloc/speaking_coach_bloc.dart';
+import '../../features/speaking_partner/data/data_sources/speaking_partner_remote_datasource.dart';
+import '../../features/speaking_partner/data/repositories/speaking_partner_repository_impl.dart';
+import '../../features/speaking_partner/domain/repositories/speaking_partner_repository.dart';
+import '../../features/speaking_partner/domain/use_cases/get_scenarios_use_case.dart';
+import '../../features/speaking_partner/domain/use_cases/process_turn_use_case.dart';
+import '../../features/speaking_partner/presentation/bloc/speaking_partner_bloc.dart';
 
 final getIt = GetIt.instance;
 
@@ -335,6 +341,27 @@ Future<void> setupServiceLocator() async {
   getIt.registerFactory(
     () => SpeakingCoachBloc(
       analyzeSpeakingUseCase: getIt<AnalyzeSpeakingUseCase>(),
+    ),
+  );
+
+  // Speaking Partner
+  getIt.registerLazySingleton<SpeakingPartnerRemoteDataSource>(
+    () => SpeakingPartnerRemoteDataSourceImpl(getIt<Dio>()),
+  );
+  getIt.registerLazySingleton<SpeakingPartnerRepository>(
+    () =>
+        SpeakingPartnerRepositoryImpl(getIt<SpeakingPartnerRemoteDataSource>()),
+  );
+  getIt.registerLazySingleton(
+    () => GetScenariosUseCase(getIt<SpeakingPartnerRepository>()),
+  );
+  getIt.registerLazySingleton(
+    () => ProcessTurnUseCase(getIt<SpeakingPartnerRepository>()),
+  );
+  getIt.registerFactory(
+    () => SpeakingPartnerBloc(
+      getScenarios: getIt<GetScenariosUseCase>(),
+      processTurn: getIt<ProcessTurnUseCase>(),
     ),
   );
 }

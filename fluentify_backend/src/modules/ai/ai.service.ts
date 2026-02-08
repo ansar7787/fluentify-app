@@ -19,6 +19,26 @@ export class AiService {
         this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     }
 
+    async processAudio(audioBuffer: Buffer, prompt: string): Promise<any> {
+        try {
+            const audioBase64 = audioBuffer.toString('base64');
+            const result = await this.model.generateContent([
+                {
+                    inlineData: {
+                        mimeType: "audio/mp3",
+                        data: audioBase64
+                    }
+                },
+                { text: prompt }
+            ]);
+            const responseText = result.response.text();
+            return JSON.parse(responseText);
+        } catch (error) {
+            this.logger.error(`AI Audio Processing Error: ${error.message}`);
+            throw new InternalServerErrorException('Failed to process AI audio request');
+        }
+    }
+
     async generateContent(dto: GenerateContentDto): Promise<any> {
         const { gameType, level, topic, count = 5 } = dto;
         const schema = this.getSchemaForType(gameType);
@@ -91,6 +111,15 @@ export class AiService {
         } catch (error) {
             this.logger.error(`AI Speaking Analysis Error: ${error.message}`);
             return this.getSpeakingMock(dto);
+        }
+    }
+
+    async processGenericPrompt(prompt: string): Promise<any> {
+        try {
+            return await this.callGemini(prompt, false);
+        } catch (error) {
+            this.logger.error(`AI Generic Prompt Error: ${error.message}`);
+            throw new InternalServerErrorException('Failed to process AI request');
         }
     }
 
