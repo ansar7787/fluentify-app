@@ -45,6 +45,7 @@ class _SpeakingPartnerChatPageState extends State<SpeakingPartnerChatPage> {
 
   Future<void> _stopRecording() async {
     final path = await _audioRecorder.stop();
+    if (!mounted) return;
     setState(() => _isRecording = false);
     if (path != null) {
       context.read<SpeakingPartnerBloc>().add(SendUserSpeech(path));
@@ -180,7 +181,7 @@ class _SpeakingPartnerChatPageState extends State<SpeakingPartnerChatPage> {
             SizedBox(
               width: 12.w,
               height: 12.w,
-              child: CircularProgressIndicator(
+              child: const CircularProgressIndicator(
                   strokeWidth: 2, color: AppColors.primary),
             ),
           ],

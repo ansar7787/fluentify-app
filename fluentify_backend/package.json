@@ -1,8 +1,8 @@
 {
   "name": "fluentify-backend",
   "version": "1.0.0",
-  "description": "SpeakPay backend API",
-  "author": "SpeakPay Team",
+  "description": "Fluentify backend API",
+  "author": "Fluentify Team",
   "private": true,
   "license": "MIT",
   "scripts": {

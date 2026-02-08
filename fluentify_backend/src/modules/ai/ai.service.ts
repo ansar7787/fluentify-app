@@ -13,7 +13,7 @@ export class AiService {
     constructor(private configService: ConfigService) {
         const apiKey = this.configService.get<string>('GEMINI_API_KEY');
         if (!apiKey) {
-            console.warn('GEMINI_API_KEY is not defined in env variables.');
+            this.logger.warn('GEMINI_API_KEY is not defined in env variables.');
         }
         this.genAI = new GoogleGenerativeAI(apiKey || 'dummy_key');
         this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
@@ -32,11 +32,61 @@ export class AiService {
                 { text: prompt }
             ]);
             const responseText = result.response.text();
-            return JSON.parse(responseText);
+            return this.sanitizeAndParseJson(responseText, false);
         } catch (error) {
             this.logger.error(`AI Audio Processing Error: ${error.message}`);
             throw new InternalServerErrorException('Failed to process AI audio request');
         }
+    }
+
+    async analyzeSpeech(audioBuffer: Buffer, missionContext: string = ''): Promise<{
+        transcript: string;
+        fluencyScore: number;
+        vocabularyScore: number;
+        grammarScore: number;
+        pronunciationScore: number;
+        feedback: string;
+    }> {
+        const prompt = `
+            You are an expert English Language Coach for the app "Fluentify".
+            Analyze the student's speech based on the provided audio and mission context.
+            
+            Mission Context: ${missionContext}
+
+            Return a strict JSON object with the following fields:
+            - transcript (The detailed transcription of what the student said)
+            - fluencyScore (Number 0.0 to 10.0)
+            - vocabularyScore (Number 0.0 to 10.0)
+            - grammarScore (Number 0.0 to 10.0)
+            - pronunciationScore (Number 0.0 to 10.0)
+            - feedback (String, encouraging and specific, use markdown for highlighting)
+        `;
+
+        try {
+            const result = await this.processAudio(audioBuffer, prompt);
+            return {
+                transcript: result.transcript || "Transcript not available",
+                fluencyScore: result.fluencyScore || 0,
+                vocabularyScore: result.vocabularyScore || 0,
+                grammarScore: result.grammarScore || 0,
+                pronunciationScore: result.pronunciationScore || 0,
+                feedback: result.feedback || "Good effort!",
+            };
+        } catch (error) {
+            this.logger.error(`Analyze Speech Error: ${error.message}`);
+            return this.getMockAnalysis();
+        }
+    }
+
+    private getMockAnalysis() {
+        return {
+            transcript: "Hello, I am practicing my English speaking skills.",
+            fluencyScore: 8.0,
+            vocabularyScore: 7.5,
+            grammarScore: 8.5,
+            pronunciationScore: 7.0,
+            feedback: "Great effort! (Mock Mode) Your clarity is good. Try to vary your intonation more.",
+        };
     }
 
     async generateContent(dto: GenerateContentDto): Promise<any> {

@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -11,6 +11,7 @@ import * as crypto from 'crypto';
 @Injectable()
 export class PaymentService {
     private razorpay: any;
+    private readonly logger = new Logger(PaymentService.name);
 
     constructor(
         private configService: ConfigService,
@@ -26,9 +27,7 @@ export class PaymentService {
 
     async createOrder(user: User, amount: number, description: string): Promise<any> {
         try {
-            console.log('--- Razorpay Order Request ---');
-            console.log('Key ID:', this.configService.get<string>('RAZORPAY_KEY_ID'));
-            console.log('Amount:', amount);
+            this.logger.log(`Creating Razorpay order for amount: ${amount}`);
 
             const options = {
                 amount: Math.round(amount * 100), // Ensure it's an integer
@@ -37,7 +36,7 @@ export class PaymentService {
             };
 
             const order = await this.razorpay.orders.create(options);
-            console.log('Razorpay Order Created:', order.id);
+            this.logger.log(`Razorpay Order Created: ${order.id}`);
 
             const payment = this.paymentRepository.create({
                 user,
@@ -51,8 +50,7 @@ export class PaymentService {
 
             return order;
         } catch (error) {
-            console.error('Razorpay Order Error Details:', JSON.stringify(error, null, 2));
-            console.error('Full Error:', error);
+            this.logger.error(`Razorpay Order Error: ${error.message}`, error.stack);
             throw new InternalServerErrorException('Could not create payment order');
         }
     }

@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/di/service_locator.dart';
 import '../bloc/chat_bloc.dart';
-import '../../../../config/theme/app_theme.dart';
 import '../../../../core/theme/app_colors.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
@@ -166,8 +165,10 @@ class _ChatViewState extends State<ChatView> {
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(20.r),
                 topRight: Radius.circular(20.r),
-                bottomLeft: isMe ? Radius.circular(20.r) : Radius.circular(0),
-                bottomRight: isMe ? Radius.circular(0) : Radius.circular(20.r),
+                bottomLeft:
+                    isMe ? Radius.circular(20.r) : const Radius.circular(0),
+                bottomRight:
+                    isMe ? const Radius.circular(0) : Radius.circular(20.r),
               ),
               boxShadow: [
                 BoxShadow(

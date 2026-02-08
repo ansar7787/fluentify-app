@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { Mission } from './entities/mission.entity';
 import { UserMission } from './entities/user-mission.entity';
 import { User } from '../user/entities/user.entity';
-import { AIService } from '../../shared/services/ai.service';
+import { AiService } from '../ai/ai.service';
 import { UserService } from '../user/user.service';
 
 @Injectable()
@@ -14,7 +14,7 @@ export class MissionService {
         private missionRepository: Repository<Mission>,
         @InjectRepository(UserMission)
         private userMissionRepository: Repository<UserMission>,
-        private aiService: AIService,
+        private aiService: AiService,
         private userService: UserService,
     ) { }
 

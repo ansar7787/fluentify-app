@@ -172,7 +172,7 @@ class _SpeakingGamePageState extends State<SpeakingGamePage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(
+                const CircularProgressIndicator(
                     color: AppColors.primary, strokeWidth: 3),
                 SizedBox(height: 24.h),
                 Text('AI Analyzing Speech...',

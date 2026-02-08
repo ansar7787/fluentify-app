@@ -32,7 +32,7 @@ import { SpeakingPartnerModule } from './modules/speaking-partner/speaking-partn
         port: configService.get('DB_PORT', 5432),
         username: configService.get('DB_USERNAME', 'postgres'),
         password: configService.get('DB_PASSWORD', ''),
-        database: configService.get('DB_NAME', 'speakpay_db'),
+        database: configService.get('DB_NAME', 'fluentify_db'),
         entities: ['dist/**/*.entity{.ts,.js}'],
         synchronize: true, // Enable for now to ensure tables exist in prod
         ssl: configService.get('NODE_ENV') === 'production',

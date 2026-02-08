@@ -76,7 +76,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     var options = {
       'key': 'rzp_test_S6xVFDmyZdw8Qy',
       'amount': amount,
-      'name': 'SpeakPay',
+      'name': 'Fluentify',
       'order_id': orderId,
       'description': description,
       'timeout': 300,
