@@ -76,6 +76,11 @@ class UserRepositoryImpl implements UserRepository {
     int? gameLevel,
     int? grammarLevel,
     int? speakingLevel,
+    int? wordMatchLevel,
+    int? typingLevel,
+    int? dictationLevel,
+    int? readingLevel,
+    int? rapidFireLevel,
   }) async {
     try {
       final response = await dio.patch('/users/me', data: {
@@ -84,6 +89,11 @@ class UserRepositoryImpl implements UserRepository {
         if (gameLevel != null) 'gameLevel': gameLevel,
         if (grammarLevel != null) 'grammarLevel': grammarLevel,
         if (speakingLevel != null) 'speakingLevel': speakingLevel,
+        if (wordMatchLevel != null) 'wordMatchLevel': wordMatchLevel,
+        if (typingLevel != null) 'typingLevel': typingLevel,
+        if (dictationLevel != null) 'dictationLevel': dictationLevel,
+        if (readingLevel != null) 'readingLevel': readingLevel,
+        if (rapidFireLevel != null) 'rapidFireLevel': rapidFireLevel,
       });
 
       if (response.statusCode == 200) {

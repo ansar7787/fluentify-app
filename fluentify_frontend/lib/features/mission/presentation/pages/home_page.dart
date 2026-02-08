@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'dart:ui';
 
-import '../../domain/entities/mission_entity.dart';
-import 'mission_detail_page.dart';
-import '../../../peer/presentation/pages/matching_page.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
-
 import '../../../user/presentation/bloc/user_bloc.dart';
 import '../../../user/presentation/bloc/user_event.dart';
 import '../../../user/presentation/bloc/user_state.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import '../../../game/presentation/pages/game_home_page.dart';
+import '../../../peer/presentation/pages/matching_page.dart';
+
+// Game Pages
 import '../../../game/presentation/pages/grammar_levels_page.dart';
 import '../../../game/presentation/pages/speaking_levels_page.dart';
+import '../../../game/presentation/pages/word_match_levels_page.dart';
+import '../../../game/presentation/pages/typing_levels_page.dart';
+import '../../../game/presentation/pages/dictation_levels_page.dart';
+import '../../../game/presentation/pages/rapid_fire_levels_page.dart';
+import '../../../streak/presentation/pages/streak_page.dart';
+import '../../../../config/theme/app_theme.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -24,12 +30,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   bool _isLoading = true;
+  int _navIndex = 0;
 
   @override
   void initState() {
     super.initState();
     context.read<UserBloc>().add(GetUserProfileEvent());
-    Future.delayed(const Duration(seconds: 1), () {
+    Future.delayed(const Duration(milliseconds: 800), () {
       if (mounted) setState(() => _isLoading = false);
     });
   }
@@ -60,56 +67,108 @@ class _HomePageState extends State<HomePage> {
 
         if (_isLoading || state is UserLoading) {
           return const Scaffold(
-              body: Center(child: CircularProgressIndicator()));
+            backgroundColor: Color(0xFFF1F5F9), // Slate 100
+            body: Center(
+                child: CircularProgressIndicator(color: AppTheme.accentBlue)),
+          );
         }
 
         return Scaffold(
           backgroundColor: const Color(0xFFF8FAFC), // Slate 50
-          bottomNavigationBar: _buildBottomNav(context),
-          body: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              _buildSliverAppBar(context, firstName, avatarUrl),
-              SliverPadding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    _buildStatsRow(streak, coins, level),
-                    const SizedBox(height: 32),
-                    _buildSectionHeader('Arcade Arena', () {}),
-                    const SizedBox(height: 16),
-                    _buildGameCarousel(context),
-                    const SizedBox(height: 32),
-                    _buildSectionHeader('Daily Missions', () {}),
-                    const SizedBox(height: 16),
-                    _buildMissionItem(
-                      context,
-                      "Self Introduction",
-                      "Master the art of introducing yourself.",
-                      Icons.mic_rounded,
-                      Colors.blue,
-                      10,
-                      false,
+          extendBody: true, // Important for floating nav bar
+          body: Stack(
+            children: [
+              // 1. Background Elements
+              Positioned(
+                top: -150,
+                right: -100,
+                child: Container(
+                  width: 400,
+                  height: 400,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                        const Color(0xFF3B82F6).withValues(alpha: 0.0),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    _buildMissionItem(
-                      context,
-                      "Business Negotiation",
-                      "Learn key phrases for making deals.",
-                      Icons.business_center_rounded,
-                      Colors.purple,
-                      20,
-                      true,
-                    ),
-                    const SizedBox(height: 32),
-                    _buildSectionHeader('Explore More', () {}),
-                    const SizedBox(height: 16),
-                    _buildPromoCard(context),
-                    const SizedBox(height: 100), // Spacing for fab/bottom nav
-                  ]),
+                  ),
                 ),
               ),
+              Positioned(
+                top: 100,
+                left: -80,
+                child: Container(
+                  width: 300,
+                  height: 300,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        const Color(0xFF8B5CF6).withValues(alpha: 0.15),
+                        const Color(0xFF8B5CF6).withValues(alpha: 0.0),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // 2. Main Scrollable Content
+              CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  _buildModernAppBar(context, firstName, avatarUrl),
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                        const SizedBox(height: 10),
+
+                        // Hero Section (Stats)
+                        _buildHeroStats(context, streak, coins, level)
+                            .animate()
+                            .fadeIn(duration: 600.ms)
+                            .slideY(begin: 0.1, end: 0),
+
+                        const SizedBox(height: 32),
+
+                        // Section Title
+                        _buildSectionHeader("Start Learning", "Pick a mode"),
+                        const SizedBox(height: 16),
+
+                        // Game Grid (Bento Style)
+                        _buildBentoGrid(context)
+                            .animate()
+                            .fadeIn(delay: 200.ms),
+
+                        const SizedBox(height: 32),
+
+                        // Daily Challenge Promo
+                        _buildDailyChallengeCard(context)
+                            .animate()
+                            .fadeIn(delay: 400.ms)
+                            .scale(),
+
+                        const SizedBox(
+                            height: 120), // Bottom padding for floating nav
+                      ]),
+                    ),
+                  ),
+                ],
+              ),
+
+              // 3. Floating Navigation Dock
+              Positioned(
+                bottom: 30,
+                left: 20,
+                right: 20,
+                child: _buildFloatingDock(context),
+              ).animate().slideY(
+                  begin: 1,
+                  end: 0,
+                  duration: 800.ms,
+                  curve: Curves.easeOutQuart),
             ],
           ),
         );
@@ -117,396 +176,613 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildSliverAppBar(
+  Widget _buildModernAppBar(
       BuildContext context, String name, String? avatarUrl) {
     return SliverAppBar(
-      expandedHeight: 140,
-      backgroundColor: const Color(0xFF2563EB), // Best Blue
-      floating: false,
+      expandedHeight: 80,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
       pinned: true,
-      flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF2563EB), Color(0xFF1E40AF)],
-            ),
-          ),
-          child: Stack(
+      centerTitle: false,
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Positioned(
-                right: -20,
-                top: -20,
-                child: Container(
-                  width: 150,
-                  height: 150,
-                  decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      shape: BoxShape.circle),
+              Text(
+                "Hello, $name",
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF0F172A),
+                  letterSpacing: -0.5,
                 ),
               ),
-              Positioned(
-                bottom: 20,
-                left: 20,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text("Welcome back,",
-                        style:
-                            TextStyle(color: Colors.blue[100], fontSize: 14)),
-                    Text(name,
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold)),
-                  ],
+              Text(
+                "Ready to master English?",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[500],
                 ),
               ),
             ],
           ),
-        ),
-      ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 16),
-          child: CircleAvatar(
-            backgroundColor: Colors.white24,
-            backgroundImage: avatarUrl != null
-                ? CachedNetworkImageProvider(avatarUrl)
-                : null,
-            child: avatarUrl == null
-                ? const Icon(Icons.person, color: Colors.white)
-                : null,
+          GestureDetector(
+            onTap: () => Navigator.pushNamed(context, '/profile'),
+            child: Container(
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                    color: AppTheme.accentBlue.withValues(alpha: 0.3),
+                    width: 2),
+              ),
+              child: CircleAvatar(
+                radius: 20,
+                backgroundColor: AppTheme.accentBlue.withValues(alpha: 0.1),
+                backgroundImage: avatarUrl != null
+                    ? CachedNetworkImageProvider(avatarUrl)
+                    : null,
+                child: avatarUrl == null
+                    ? Text(
+                        name.isNotEmpty ? name[0].toUpperCase() : "?",
+                        style: const TextStyle(
+                            color: AppTheme.accentBlue,
+                            fontWeight: FontWeight.bold),
+                      )
+                    : null,
+              ),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildStatsRow(int streak, int coins, String level) {
+  Widget _buildHeroStats(
+      BuildContext context, int streak, int coins, String level) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 20,
-              offset: const Offset(0, 10))
+            color: const Color(0xFF64748B).withValues(alpha: 0.08),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildStatItem('Streak', '$streak Days',
-              Icons.local_fire_department_rounded, Colors.orange),
+          _buildStatPill(
+            context,
+            icon: Icons.local_fire_department_rounded,
+            value: "$streak",
+            label: "Streak",
+            color: const Color(0xFFF97316),
+            onTap: () => Navigator.push(
+                context, MaterialPageRoute(builder: (_) => const StreakPage())),
+          ),
           Container(width: 1, height: 40, color: Colors.grey[200]),
-          _buildStatItem(
-              'Credits', '$coins', Icons.monetization_on_rounded, Colors.amber),
+          _buildStatPill(
+            context,
+            icon: Icons.monetization_on_rounded,
+            value: "$coins",
+            label: "Credits",
+            color: const Color(0xFFF59E0B),
+            onTap: () {},
+          ),
           Container(width: 1, height: 40, color: Colors.grey[200]),
-          _buildStatItem('Level', level, Icons.verified_rounded, Colors.blue),
+          _buildStatPill(
+            context,
+            icon: Icons.star_rounded,
+            value: level,
+            label: "Level",
+            color: const Color(0xFF3B82F6),
+            onTap: () {},
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildStatItem(String label, String val, IconData icon, Color color) {
-    return Column(
-      children: [
-        Icon(icon, color: color, size: 28),
-        const SizedBox(height: 4),
-        Text(val,
-            style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: Color(0xFF1E293B))),
-        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[500])),
-      ],
-    );
-  }
-
-  Widget _buildSectionHeader(String title, VoidCallback onTap) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(title,
-            style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF0F172A))),
-        // GestureDetector(
-        //   onTap: onTap,
-        //   child: const Text('See All', style: TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.w600)),
-        // ),
-      ],
-    );
-  }
-
-  Widget _buildGameCarousel(BuildContext context) {
-    final games = [
-      {
-        'title': 'Arcade Arena',
-        'desc': 'Play mini-games',
-        'color': Colors.indigo,
-        'icon': Icons.games,
-        'page': const GameHomePage()
-      },
-      {
-        'title': 'Grammar Quest',
-        'desc': 'Master rules',
-        'color': Colors.purple,
-        'icon': Icons.text_fields,
-        'page': const GrammarLevelsPage()
-      },
-      {
-        'title': 'Fluency Flow',
-        'desc': 'Speak confidently',
-        'color': Colors.teal,
-        'icon': Icons.mic,
-        'page': const SpeakingLevelsPage()
-      },
-    ];
-
-    return SizedBox(
-      height: 200,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        itemCount: games.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 16),
-        itemBuilder: (context, index) {
-          final game = games[index];
-          return GestureDetector(
-            onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => game['page'] as Widget));
-            },
-            child: Container(
-              width: 160,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    (game['color'] as Color).withOpacity(0.8),
-                    (game['color'] as Color)
-                  ],
+  Widget _buildStatPill(BuildContext context,
+      {required IconData icon,
+      required String value,
+      required String label,
+      required Color color,
+      required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color, size: 22),
+              const SizedBox(width: 6),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF0F172A),
                 ),
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                      color: (game['color'] as Color).withOpacity(0.4),
-                      blurRadius: 12,
-                      offset: const Offset(0, 8))
-                ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                        color: Colors.white24,
-                        borderRadius: BorderRadius.circular(12)),
-                    child: Icon(game['icon'] as IconData, color: Colors.white),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(game['title'] as String,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16)),
-                      const SizedBox(height: 4),
-                      Text(game['desc'] as String,
-                          style: const TextStyle(
-                              color: Colors.white70, fontSize: 12)),
-                    ],
-                  )
-                ],
-              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[400],
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildMissionItem(BuildContext context, String title, String subtitle,
-      IconData icon, Color color, int reward, bool isLocked) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MissionDetailPage(
-              mission: MissionEntity(
-                id: 'mission_${title.hashCode}',
-                title: title,
-                description: subtitle,
-                level: isLocked ? 'Intermediate' : 'Beginner',
-                coins: reward,
-                content:
-                    'Mission content for $title. Practice your skills here.',
+  Widget _buildSectionHeader(String title, String subtitle) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF0F172A),
               ),
             ),
-          ),
-        );
-      },
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.grey[100]!),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[500],
+              ),
+            ),
+          ],
         ),
-        child: Row(
+        // IconButton(
+        //   onPressed: () {},
+        //   icon: Icon(Icons.arrow_forward_rounded, color: AppTheme.accentBlue),
+        // )
+      ],
+    );
+  }
+
+  Widget _buildBentoGrid(BuildContext context) {
+    // A simplified Bento Grid implementation using Column + Rows
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              flex: 6,
+              child: _buildBigGameCard(
+                context,
+                title: 'Grammar',
+                subtitle: 'Master rules',
+                icon: Icons.text_fields_rounded,
+                color: const Color(0xFF8B5CF6),
+                page: const GrammarLevelsPage(),
+                height: 180,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              flex: 5,
+              child: Column(
+                children: [
+                  _buildSmallGameCard(
+                    context,
+                    title: 'Speed Typer',
+                    icon: Icons.keyboard_rounded,
+                    color: const Color(0xFFEC4899),
+                    page: const TypingLevelsPage(),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSmallGameCard(
+                    context,
+                    title: 'Word Match',
+                    icon: Icons.extension_rounded,
+                    color: const Color(0xFF10B981),
+                    page: const WordMatchLevelsPage(),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _buildSmallGameCard(
+                context,
+                title: 'Speaking',
+                icon: Icons.mic_rounded,
+                color: const Color(0xFF3B82F6),
+                page: const SpeakingLevelsPage(),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildSmallGameCard(
+                context,
+                title: 'Diction',
+                icon: Icons.headphones_rounded,
+                color: const Color(0xFFF59E0B),
+                page: const DictationLevelsPage(),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _buildWideGameCard(
+          context,
+          title: 'Rapid Fire Quiz',
+          subtitle: 'Think fast, answer faster!',
+          icon: Icons.timer_rounded,
+          color: const Color(0xFFEF4444),
+          page: const RapidFireLevelsPage(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBigGameCard(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required Widget page,
+    required double height,
+  }) {
+    return GestureDetector(
+      onTap: () =>
+          Navigator.push(context, MaterialPageRoute(builder: (_) => page)),
+      child: Container(
+        height: height,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(32),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.3),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                  color: color.withOpacity(0.1), shape: BoxShape.circle),
-              child: Icon(icon, color: color),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Color(0xFF1E293B))),
-                  Text(subtitle,
-                      style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-                ],
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(16),
               ),
+              child: Icon(icon, color: Colors.white, size: 32),
             ),
-            if (isLocked)
-              const Icon(Icons.lock_rounded, color: Colors.grey)
-            else
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                    color: Colors.amber[50],
-                    borderRadius: BorderRadius.circular(20)),
-                child: Row(
-                  children: [
-                    const Icon(Icons.monetization_on,
-                        size: 14, color: Colors.amber),
-                    const SizedBox(width: 4),
-                    Text('+$reward',
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.amber,
-                            fontSize: 12)),
-                  ],
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
                 ),
-              )
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            )
           ],
         ),
       ),
     );
   }
 
-  Widget _buildPromoCard(BuildContext context) {
+  Widget _buildSmallGameCard(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+    required Color color,
+    required Widget page,
+  }) {
+    return GestureDetector(
+      onTap: () =>
+          Navigator.push(context, MaterialPageRoute(builder: (_) => page)),
+      child: Container(
+        height: 82,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.grey[100]!),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Flexible(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF0F172A),
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWideGameCard(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required Widget page,
+  }) {
+    return GestureDetector(
+      onTap: () =>
+          Navigator.push(context, MaterialPageRoute(builder: (_) => page)),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [color, color.withValues(alpha: 0.8)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.3),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.white.withValues(alpha: 0.9),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(icon, color: Colors.white, size: 28),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDailyChallengeCard(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(32),
         image: const DecorationImage(
-          image: NetworkImage(
-              'https://img.freepik.com/free-vector/gradient-technological-background_23-2148884155.jpg'), // Placeholder or asset
+          image: AssetImage(
+              'assets/images/pattern.png'), // Fallback if missing? pattern.png is common.
+          opacity: 0.05,
           fit: BoxFit.cover,
-          opacity: 0.2,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1E293B).withValues(alpha: 0.4),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-                color: Colors.blue, borderRadius: BorderRadius.circular(8)),
-            child: const Text('NEW',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold)),
+          Row(
+            children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF3B82F6),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text('DAILY MISSION',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5)),
+              ),
+              const Spacer(),
+              const Icon(Icons.arrow_forward_rounded,
+                  color: Colors.white54, size: 20),
+            ],
           ),
-          const SizedBox(height: 12),
-          const Text('Join the Tournament',
+          const SizedBox(height: 16),
+          const Text('The Great Debate',
               style: TextStyle(
                   color: Colors.white,
-                  fontSize: 20,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
-          const Text('Compete with others and win exclusive badges.',
-              style: TextStyle(color: Colors.white70)),
+          Text('Learn how to politely disagree in English.',
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 14,
+                  height: 1.5)),
           const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF1E293B),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
-            child: const Text('Register Now'),
-          )
+          LinearProgressIndicator(
+            value: 0.4,
+            backgroundColor: Colors.white.withValues(alpha: 0.1),
+            valueColor: const AlwaysStoppedAnimation(Color(0xFF3B82F6)),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          const SizedBox(height: 8),
+          Text('40% Completed',
+              style: TextStyle(color: Colors.grey[500], fontSize: 12)),
         ],
       ),
     );
   }
 
-  Widget _buildBottomNav(BuildContext context) {
+  Widget _buildFloatingDock(BuildContext context) {
     return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.9), // Glassmorphism base
+        borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 20,
-              offset: const Offset(0, -5))
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+          const BoxShadow(
+            color: Colors.white,
+            blurRadius: 0,
+            spreadRadius: 0,
+          ) // Inner glow hack not needed with high logic
         ],
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
       ),
-      child: BottomNavigationBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        currentIndex: 0,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFF2563EB),
-        unselectedItemColor: Colors.grey[400],
-        showUnselectedLabels: true,
-        onTap: (index) {
-          if (index == 1)
-            Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const MatchingPage()));
-          else if (index == 2)
-            Navigator.pushNamed(context, '/leaderboard');
-          else if (index == 3) Navigator.pushNamed(context, '/profile');
-        },
-        items: const [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.home_rounded), label: 'Home'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.people_rounded), label: 'Peers'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.leaderboard_rounded), label: 'Rank'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person_rounded), label: 'Profile'),
-        ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(32),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildDockItem(0, Icons.home_rounded, 'Home', () {}),
+              _buildDockItem(1, Icons.people_rounded, 'Peers', () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const MatchingPage()));
+              }),
+              _buildDockItem(2, Icons.leaderboard_rounded, 'Rank', () {
+                Navigator.pushNamed(context, '/leaderboard');
+              }),
+              _buildDockItem(3, Icons.person_rounded, 'Profile', () {
+                Navigator.pushNamed(context, '/profile');
+              }),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDockItem(
+      int index, IconData icon, String label, VoidCallback onTap) {
+    final isSelected = _navIndex == index;
+    return GestureDetector(
+      onTap: () {
+        setState(() => _navIndex = index);
+        onTap();
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: EdgeInsets.symmetric(
+            horizontal: isSelected ? 16 : 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppTheme.accentBlue.withValues(alpha: 0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? AppTheme.accentBlue : Colors.grey[400],
+              size: 24,
+            ),
+            if (isSelected) ...[
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: AppTheme.accentBlue,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ).animate().fadeIn().slideX(),
+            ]
+          ],
+        ),
       ),
     );
   }

@@ -14,6 +14,11 @@ class UpdateProfileUseCase {
     int? gameLevel,
     int? grammarLevel,
     int? speakingLevel,
+    int? wordMatchLevel,
+    int? typingLevel,
+    int? dictationLevel,
+    int? readingLevel,
+    int? rapidFireLevel,
   }) async {
     return await repository.updateProfile(
       fullName: fullName,
@@ -21,6 +26,11 @@ class UpdateProfileUseCase {
       gameLevel: gameLevel,
       grammarLevel: grammarLevel,
       speakingLevel: speakingLevel,
+      wordMatchLevel: wordMatchLevel,
+      typingLevel: typingLevel,
+      dictationLevel: dictationLevel,
+      readingLevel: readingLevel,
+      rapidFireLevel: rapidFireLevel,
     );
   }
 }

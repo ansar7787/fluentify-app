@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:ui';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/di/service_locator.dart';
@@ -134,10 +134,10 @@ class _SpeakingLevelsPageState extends State<SpeakingLevelsPage> {
             child: Container(
               padding: EdgeInsets.all(12.w),
               decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(0.1),
+                color: const Color(0xFF10B981).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
-                border:
-                    Border.all(color: const Color(0xFF10B981).withOpacity(0.3)),
+                border: Border.all(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.3)),
               ),
               child: Icon(Icons.close_rounded,
                   color: const Color(0xFF10B981), size: 24.w),
@@ -161,15 +161,15 @@ class _SpeakingLevelsPageState extends State<SpeakingLevelsPage> {
                 child: CircularProgressIndicator(
                   value: _highestUnlockedLevel / 100,
                   strokeWidth: 4,
-                  backgroundColor: const Color(0xFF10B981).withOpacity(0.1),
+                  backgroundColor:
+                      const Color(0xFF10B981).withValues(alpha: 0.1),
                   valueColor: const AlwaysStoppedAnimation(Color(0xFF10B981)),
                 ),
               ),
               Text(
                 '$_highestUnlockedLevel',
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF10B981)),
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, color: Color(0xFF10B981)),
               ),
             ],
           ),
@@ -202,22 +202,24 @@ class _SpeakingLevelsPageState extends State<SpeakingLevelsPage> {
             color: isUnlocked
                 ? (isCurrent
                     ? const Color(0xFF10B981)
-                    : (isDark ? Colors.white.withOpacity(0.05) : Colors.white))
+                    : (isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.white))
                 : (isDark
-                    ? Colors.white.withOpacity(0.02)
-                    : Colors.black.withOpacity(0.05)),
+                    ? Colors.white.withValues(alpha: 0.02)
+                    : Colors.black.withValues(alpha: 0.05)),
             borderRadius: BorderRadius.circular(30.r),
             border: Border.all(
               color: isCurrent
                   ? Colors.white24
                   : (isUnlocked
-                      ? const Color(0xFF10B981).withOpacity(0.2)
+                      ? const Color(0xFF10B981).withValues(alpha: 0.2)
                       : Colors.transparent),
             ),
             boxShadow: isCurrent
                 ? [
                     BoxShadow(
-                        color: const Color(0xFF10B981).withOpacity(0.4),
+                        color: const Color(0xFF10B981).withValues(alpha: 0.4),
                         blurRadius: 20,
                         offset: const Offset(0, 8))
                   ]
@@ -233,7 +235,7 @@ class _SpeakingLevelsPageState extends State<SpeakingLevelsPage> {
                     bottom: -20.h,
                     child: Icon(Icons.mic_none_rounded,
                         size: 100.w,
-                        color: const Color(0xFF10B981).withOpacity(0.05)),
+                        color: const Color(0xFF10B981).withValues(alpha: 0.05)),
                   ),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 24.w),
@@ -245,9 +247,10 @@ class _SpeakingLevelsPageState extends State<SpeakingLevelsPage> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: isCurrent
-                              ? Colors.white.withOpacity(0.2)
+                              ? Colors.white.withValues(alpha: 0.2)
                               : (isUnlocked
-                                  ? const Color(0xFF10B981).withOpacity(0.1)
+                                  ? const Color(0xFF10B981)
+                                      .withValues(alpha: 0.1)
                                   : Colors.transparent),
                         ),
                         child: Center(
@@ -279,7 +282,7 @@ class _SpeakingLevelsPageState extends State<SpeakingLevelsPage> {
                                     ? Colors.white70
                                     : (isUnlocked
                                         ? const Color(0xFF10B981)
-                                        : Colors.grey.withOpacity(0.5)),
+                                        : Colors.grey.withValues(alpha: 0.5)),
                               ),
                             ),
                             Text(
@@ -293,7 +296,7 @@ class _SpeakingLevelsPageState extends State<SpeakingLevelsPage> {
                                         ? (isDark
                                             ? Colors.white
                                             : Colors.black87)
-                                        : Colors.grey.withOpacity(0.3)),
+                                        : Colors.grey.withValues(alpha: 0.3)),
                               ),
                             ),
                           ],
@@ -328,10 +331,10 @@ class _SpeakingLevelsPageState extends State<SpeakingLevelsPage> {
             height: 300.h,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF10B981).withOpacity(0.05),
+              color: const Color(0xFF10B981).withValues(alpha: 0.05),
               boxShadow: [
                 BoxShadow(
-                    color: const Color(0xFF10B981).withOpacity(0.05),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.05),
                     blurRadius: 150,
                     spreadRadius: 50)
               ],

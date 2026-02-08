@@ -117,7 +117,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
         boxShadow: [
           BoxShadow(
-              color: Colors.blue.withOpacity(0.05),
+              color: Colors.blue.withValues(alpha: 0.05),
               blurRadius: 20,
               offset: const Offset(0, 10)),
         ],
@@ -127,7 +127,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (rankings.length >= 2) _buildPodiumItem(rankings[1], 2),
-          if (rankings.length >= 1) _buildPodiumItem(rankings[0], 1),
+          if (rankings.isNotEmpty) _buildPodiumItem(rankings[0], 1),
           if (rankings.length >= 3) _buildPodiumItem(rankings[2], 3),
         ],
       ),
@@ -159,7 +159,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                 shape: BoxShape.circle,
                 border: Border.all(color: color, width: 3),
                 boxShadow: [
-                  BoxShadow(color: color.withOpacity(0.3), blurRadius: 12)
+                  BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 12)
                 ],
               ),
               child: CircleAvatar(
@@ -216,7 +216,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -256,7 +256,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-                color: Colors.amber.withOpacity(0.1),
+                color: Colors.amber.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20)),
             child: Text('${user.coins} 🪙',
                 style: TextStyle(
@@ -278,7 +278,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 20,
                   offset: const Offset(0, -5),
                 )

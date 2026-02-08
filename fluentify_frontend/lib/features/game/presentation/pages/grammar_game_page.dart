@@ -3,7 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:ui';
 import '../../../../config/theme/app_theme.dart';
-import '../../domain/entities/grammar_level_entity.dart'; // Updated import
+import '../../../../core/theme/app_colors.dart';
+import '../../domain/entities/grammar_level_entity.dart';
 import '../../domain/entities/grammar_challenge_entity.dart'; // Updated import
 import '../../../../core/di/service_locator.dart';
 import '../../../../features/user/domain/repositories/user_repository.dart';
@@ -76,7 +77,9 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
   }
 
   void _checkAnswer(int index) {
-    if (_isCorrect != null && _isCorrect!) return;
+    if (_isCorrect != null && _isCorrect!) {
+      return;
+    }
 
     setState(() {
       _selectedIndex = index;
@@ -139,7 +142,7 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
       builder: (context) => BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: AlertDialog(
-          backgroundColor: Colors.white.withOpacity(0.1),
+          backgroundColor: Colors.white.withValues(alpha: 0.1),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.r)),
           title: Text(title,
@@ -171,20 +174,34 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text('Grammar Quest',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.sp)),
+            style: TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 22.sp,
+                letterSpacing: -0.5)),
         backgroundColor: Colors.transparent,
-        foregroundColor: isDark ? Colors.white : Colors.black,
+        elevation: 0,
+        centerTitle: false,
+        foregroundColor: isDark ? Colors.white : AppColors.textHeadline,
         actions: [
-          Padding(
-            padding: EdgeInsets.only(right: 20.w),
+          Container(
+            margin: EdgeInsets.only(right: 16.w),
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryYellow.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(
+                  color: AppTheme.primaryYellow.withValues(alpha: 0.3)),
+            ),
             child: Row(
               children: [
-                Icon(Icons.monetization_on,
-                    color: AppTheme.primaryYellow, size: 20.w),
-                SizedBox(width: 4.w),
+                Icon(Icons.monetization_on_rounded,
+                    color: AppTheme.primaryYellow, size: 18.w),
+                SizedBox(width: 6.w),
                 Text('$_coins',
                     style: TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16.sp)),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14.sp,
+                        color: isDark ? Colors.white : AppColors.textHeadline)),
               ],
             ),
           )
@@ -192,21 +209,7 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
       ),
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDark
-                ? [
-                    const Color(0xFF1E1B4B),
-                    const Color(0xFF312E81),
-                    const Color(0xFF1E1B4B)
-                  ]
-                : [
-                    const Color(0xFFEEF2FF),
-                    const Color(0xFFE0E7FF),
-                    const Color(0xFFEEF2FF)
-                  ],
-          ),
+          color: isDark ? AppColors.darkBackground : AppColors.background,
         ),
         child: Stack(
           children: [
@@ -269,22 +272,47 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Question ${_currentIndex + 1}',
-                style: const TextStyle(color: Colors.white70, fontSize: 12)),
-            Text('${_challenges.length}',
-                style: const TextStyle(color: Colors.white38, fontSize: 12)),
+            Text('Question ${_currentIndex + 1} of ${_challenges.length}',
+                style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600)),
+            Text('${((_currentIndex + 1) / _challenges.length * 100).toInt()}%',
+                style: TextStyle(
+                    color: AppTheme.primaryYellow,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.bold)),
           ],
         ),
-        SizedBox(height: 8.h),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(10.r),
-          child: LinearProgressIndicator(
-            value: (_currentIndex + 1) / _challenges.length,
-            minHeight: 6.h,
-            backgroundColor: Colors.white12,
-            valueColor:
-                const AlwaysStoppedAnimation<Color>(AppTheme.primaryYellow),
-          ),
+        SizedBox(height: 12.h),
+        Stack(
+          children: [
+            Container(
+              height: 8.h,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+            ),
+            FractionallySizedBox(
+              widthFactor: (_currentIndex + 1) / _challenges.length,
+              child: Container(
+                height: 8.h,
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  borderRadius: BorderRadius.circular(10.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    )
+                  ],
+                ),
+              ).animate().shimmer(duration: 2.seconds, color: Colors.white30),
+            ),
+          ],
         ),
       ],
     );
@@ -293,45 +321,69 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
   Widget _buildQuestionCard(bool isDark, GrammarChallengeEntity challenge) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(30.w),
+      padding: EdgeInsets.all(32.w),
       decoration: BoxDecoration(
-        color: isDark
-            ? Colors.white.withOpacity(0.05)
-            : Colors.white.withOpacity(0.7),
+        color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(30.r),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         boxShadow: [
-          const BoxShadow(
-              color: Colors.black12, blurRadius: 20, offset: Offset(0, 10))
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 10))
         ],
       ),
       child: Column(
         children: [
-          Icon(Icons.help_outline, color: AppTheme.accentBlue, size: 40.w)
-              .animate(onPlay: (c) => c.repeat())
-              .shake(),
+          Container(
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.psychology_outlined,
+                color: AppColors.primary, size: 32.w),
+          ),
           SizedBox(height: 24.h),
           Text(
             challenge.question,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: isDark ? Colors.white : Colors.black87,
+              color: isDark ? Colors.white : AppColors.textHeadline,
               fontSize: 22.sp,
-              fontWeight: FontWeight.bold,
-              height: 1.5,
+              fontWeight: FontWeight.w800,
+              height: 1.4,
             ),
           ),
           if (_isCorrect != null && _isCorrect!)
             Padding(
-              padding: EdgeInsets.only(top: 20.h),
-              child: Text(
-                challenge.explanation,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    color: AppTheme.secondaryGreen,
-                    fontSize: 14,
-                    fontStyle: FontStyle.italic),
-              ).animate().fadeIn(),
+              padding: EdgeInsets.only(top: 24.h),
+              child: Container(
+                padding: EdgeInsets.all(16.w),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(
+                      color: AppColors.success.withValues(alpha: 0.2)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline,
+                        color: AppColors.success, size: 20.w),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Text(
+                        challenge.explanation,
+                        style: TextStyle(
+                            color: isDark ? Colors.white70 : AppColors.success,
+                            fontSize: 14.sp,
+                            height: 1.4,
+                            fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  ],
+                ),
+              ).animate().fadeIn().slideY(begin: 0.1, end: 0),
             ),
         ],
       ),
@@ -353,15 +405,16 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
         bool isSelected = _selectedIndex == index;
         bool isCorrectChoice = index == challenge.correctOptionIndex;
 
-        Color cardColor = isDark ? Colors.white.withOpacity(0.1) : Colors.white;
+        Color cardColor =
+            isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white;
         if (_isCorrect != null) {
           if (isCorrectChoice) {
-            cardColor = Colors.green.withOpacity(0.2);
+            cardColor = Colors.green.withValues(alpha: 0.2);
           } else if (isSelected) {
-            cardColor = Colors.red.withOpacity(0.2);
+            cardColor = Colors.red.withValues(alpha: 0.2);
           }
         } else if (isSelected) {
-          cardColor = AppTheme.accentBlue.withOpacity(0.3);
+          cardColor = AppTheme.accentBlue.withValues(alpha: 0.3);
         }
 
         return GestureDetector(
@@ -408,10 +461,10 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
             height: 300.h,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppTheme.accentBlue.withOpacity(0.15),
+              color: AppTheme.accentBlue.withValues(alpha: 0.15),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.accentBlue.withOpacity(0.15),
+                  color: AppTheme.accentBlue.withValues(alpha: 0.15),
                   blurRadius: 100,
                 )
               ],
@@ -426,10 +479,10 @@ class _GrammarGamePageState extends State<GrammarGamePage> {
             height: 400.h,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppTheme.primaryYellow.withOpacity(0.1),
+              color: AppTheme.primaryYellow.withValues(alpha: 0.1),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.primaryYellow.withOpacity(0.1),
+                  color: AppTheme.primaryYellow.withValues(alpha: 0.1),
                   blurRadius: 120,
                 )
               ],

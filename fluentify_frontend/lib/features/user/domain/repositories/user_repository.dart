@@ -12,6 +12,11 @@ abstract class UserRepository {
     int? gameLevel,
     int? grammarLevel,
     int? speakingLevel,
+    int? wordMatchLevel,
+    int? typingLevel,
+    int? dictationLevel,
+    int? readingLevel,
+    int? rapidFireLevel,
   });
   Future<Either<Failure, UserEntity>> addCoins(int amount);
 }

@@ -136,7 +136,7 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
                   fontSize: 22.sp,
                   shadows: [
                     Shadow(
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withValues(alpha: 0.3),
                         offset: const Offset(0, 2),
                         blurRadius: 4)
                   ])),
@@ -149,9 +149,9 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
             child: Container(
               margin: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white.withOpacity(0.3)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
               ),
               child: const Icon(Icons.arrow_back_rounded, color: Colors.white),
             ),
@@ -198,19 +198,19 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
                                 child: CircularProgressIndicator());
                           }
 
-                          if (state is ScrambleLevelsLoaded)
+                          if (state is ScrambleLevelsLoaded) {
                             levels = state.levels;
-                          else if (state is WordMatchLevelsLoaded)
+                          } else if (state is WordMatchLevelsLoaded) {
                             levels = state.levels;
-                          else if (state is TypingLevelsLoaded)
+                          } else if (state is TypingLevelsLoaded) {
                             levels = state.levels;
-                          else if (state is DictationLevelsLoaded)
+                          } else if (state is DictationLevelsLoaded) {
                             levels = state.levels;
-                          else if (state is ReadingLevelsLoaded)
+                          } else if (state is ReadingLevelsLoaded) {
                             levels = state.levels;
-                          else if (state is RapidFireLevelsLoaded)
+                          } else if (state is RapidFireLevelsLoaded) {
                             levels = state.levels;
-                          else if (state is GameError) {
+                          } else if (state is GameError) {
                             return Center(
                                 child: Text(state.message,
                                     style:
@@ -259,9 +259,9 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
       child: Container(
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(24.r),
-          border: Border.all(color: Colors.white.withOpacity(0.2)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -277,7 +277,7 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
                       color: Colors.white,
                       shadows: [
                         Shadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black.withValues(alpha: 0.2),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         )
@@ -288,7 +288,7 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
                   'Unlocked: $_highestUnlockedLevel/100',
                   style: TextStyle(
                     fontSize: 14.sp,
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -301,7 +301,7 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primaryYellow.withOpacity(0.4),
+                      color: AppTheme.primaryYellow.withValues(alpha: 0.4),
                       blurRadius: 12,
                       spreadRadius: 2,
                     )
@@ -322,7 +322,7 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
     return GestureDetector(
       onTap: () {
         if (isUnlocked) {
-          final onComplete = () => _updateProgress(level.level);
+          void onComplete() => _updateProgress(level.level);
           Widget page;
 
           switch (widget.gameMode) {
@@ -380,8 +380,8 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
           color: isUnlocked
               ? (isCurrent
                   ? AppTheme.primaryYellow
-                  : Colors.white.withOpacity(0.2))
-              : Colors.black.withOpacity(0.2),
+                  : Colors.white.withValues(alpha: 0.2))
+              : Colors.black.withValues(alpha: 0.2),
           gradient: isUnlocked
               ? LinearGradient(
                   begin: Alignment.topLeft,
@@ -389,14 +389,14 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
                   colors: isCurrent
                       ? [AppTheme.primaryYellow, Colors.orangeAccent]
                       : [
-                          Colors.white.withOpacity(0.3),
-                          Colors.white.withOpacity(0.1)
+                          Colors.white.withValues(alpha: 0.3),
+                          Colors.white.withValues(alpha: 0.1)
                         ])
               : null,
           boxShadow: isCurrent
               ? [
                   BoxShadow(
-                    color: AppTheme.primaryYellow.withOpacity(0.5),
+                    color: AppTheme.primaryYellow.withValues(alpha: 0.5),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   )
@@ -404,7 +404,7 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
               : (isUnlocked
                   ? [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       )
@@ -412,10 +412,10 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
                   : null),
           border: Border.all(
             color: isCurrent
-                ? Colors.white.withOpacity(0.8)
+                ? Colors.white.withValues(alpha: 0.8)
                 : (isUnlocked
-                    ? Colors.white.withOpacity(0.4)
-                    : Colors.white.withOpacity(0.1)),
+                    ? Colors.white.withValues(alpha: 0.4)
+                    : Colors.white.withValues(alpha: 0.1)),
             width: isCurrent ? 2 : 1.5,
           ),
         ),
@@ -435,7 +435,7 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
                         fontWeight: FontWeight.w900,
                         shadows: [
                           Shadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               blurRadius: 4,
                               offset: const Offset(0, 2))
                         ]),
@@ -488,10 +488,10 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
             height: 300.h,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppTheme.accentBlue.withOpacity(0.2),
+              color: AppTheme.accentBlue.withValues(alpha: 0.2),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.accentBlue.withOpacity(0.3),
+                  color: AppTheme.accentBlue.withValues(alpha: 0.3),
                   blurRadius: 80,
                   spreadRadius: 20,
                 )
@@ -509,10 +509,10 @@ class _GameLevelsPageState extends State<GameLevelsPage> {
             height: 400.h,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppTheme.primaryYellow.withOpacity(0.15),
+              color: AppTheme.primaryYellow.withValues(alpha: 0.15),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.primaryYellow.withOpacity(0.15),
+                  color: AppTheme.primaryYellow.withValues(alpha: 0.15),
                   blurRadius: 100,
                   spreadRadius: 10,
                 )

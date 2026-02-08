@@ -18,4 +18,9 @@ abstract class GameRepository {
   Future<Either<Failure, List<DictationLevelEntity>>> getDictationLevels();
   Future<Either<Failure, List<ReadingLevelEntity>>> getReadingLevels();
   Future<Either<Failure, List<RapidFireLevelEntity>>> getRapidFireLevels();
+
+  // Admin Methods
+  Future<Either<Failure, void>> createGameLevel(Map<String, dynamic> levelData);
+  Future<Either<Failure, List<dynamic>>> generateAiContent(
+      String gameType, String topic, String level);
 }

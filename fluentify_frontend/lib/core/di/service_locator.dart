@@ -44,6 +44,7 @@ import '../../features/admin/presentation/bloc/admin_bloc.dart';
 import '../services/notification_service.dart';
 
 import '../../features/game/data/datasources/game_local_data_source.dart';
+import '../../features/game/data/datasources/game_remote_data_source.dart';
 import '../../features/game/data/repositories/game_repository_impl.dart';
 import '../../features/game/domain/repositories/game_repository.dart';
 import '../../features/game/domain/usecases/get_grammar_levels_usecase.dart';
@@ -57,6 +58,35 @@ import '../../features/game/domain/usecases/get_rapid_fire_levels_usecase.dart';
 import '../../features/game/presentation/bloc/game_bloc.dart';
 
 import '../constants/app_constants.dart';
+import '../../core/network/chat_service.dart';
+import '../../features/chat/domain/repositories/chat_repository.dart';
+import '../../features/chat/data/repositories/chat_repository_impl.dart';
+import '../../features/chat/domain/usecases/connect_chat_usecase.dart';
+import '../../features/chat/domain/usecases/send_message_usecase.dart';
+import '../../features/chat/domain/usecases/get_chat_messages_usecase.dart';
+import '../../features/chat/presentation/bloc/chat_bloc.dart';
+
+import '../../features/session/data/datasources/session_remote_data_source.dart';
+import '../../features/session/data/repositories/session_repository_impl.dart';
+import '../../features/session/domain/repositories/session_repository.dart';
+import '../../features/session/domain/usecases/get_sessions_usecase.dart';
+import '../../features/session/presentation/bloc/session_bloc.dart';
+
+import '../../features/peer/domain/repositories/peer_repository.dart';
+import '../../features/peer/data/repositories/peer_repository_impl.dart';
+import '../../features/peer/domain/usecases/peer_usecases.dart';
+import '../../features/peer/presentation/bloc/peer_bloc.dart';
+import '../../features/speaking_coach/data/datasources/speaking_coach_remote_datasource.dart';
+import '../../features/speaking_coach/data/repositories/speaking_coach_repository_impl.dart';
+import '../../features/speaking_coach/domain/repositories/speaking_coach_repository.dart';
+import '../../features/speaking_coach/domain/usecases/analyze_speaking_usecase.dart';
+import '../../features/speaking_coach/presentation/bloc/speaking_coach_bloc.dart';
+import '../../features/speaking_partner/data/data_sources/speaking_partner_remote_datasource.dart';
+import '../../features/speaking_partner/data/repositories/speaking_partner_repository_impl.dart';
+import '../../features/speaking_partner/domain/repositories/speaking_partner_repository.dart';
+import '../../features/speaking_partner/domain/use_cases/get_scenarios_use_case.dart';
+import '../../features/speaking_partner/domain/use_cases/process_turn_use_case.dart';
+import '../../features/speaking_partner/presentation/bloc/speaking_partner_bloc.dart';
 
 final getIt = GetIt.instance;
 
@@ -209,8 +239,14 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<GameLocalDataSource>(
     () => GameLocalDataSourceImpl(),
   );
+  getIt.registerLazySingleton<GameRemoteDataSource>(
+    () => GameRemoteDataSourceImpl(getIt<Dio>()),
+  );
   getIt.registerLazySingleton<GameRepository>(
-    () => GameRepositoryImpl(localDataSource: getIt<GameLocalDataSource>()),
+    () => GameRepositoryImpl(
+      localDataSource: getIt<GameLocalDataSource>(),
+      remoteDataSource: getIt<GameRemoteDataSource>(),
+    ),
   );
   getIt.registerLazySingleton(
     () => GetGrammarLevelsUseCase(getIt<GameRepository>()),
@@ -247,6 +283,85 @@ Future<void> setupServiceLocator() async {
       getDictationLevels: getIt<GetDictationLevelsUseCase>(),
       getReadingLevels: getIt<GetReadingLevelsUseCase>(),
       getRapidFireLevels: getIt<GetRapidFireLevelsUseCase>(),
+    ),
+  );
+
+  // Chat
+  getIt.registerLazySingleton<ChatService>(() => ChatService());
+  getIt.registerLazySingleton<ChatRepository>(
+      () => ChatRepositoryImpl(getIt<ChatService>()));
+
+  getIt
+      .registerLazySingleton(() => ConnectChatUseCase(getIt<ChatRepository>()));
+  getIt
+      .registerLazySingleton(() => SendMessageUseCase(getIt<ChatRepository>()));
+  getIt.registerLazySingleton(
+      () => GetChatMessagesUseCase(getIt<ChatRepository>()));
+
+  getIt.registerFactory(() => ChatBloc(
+        connectChat: getIt<ConnectChatUseCase>(),
+        sendMessage: getIt<SendMessageUseCase>(),
+        getChatMessages: getIt<GetChatMessagesUseCase>(),
+      ));
+
+  // Session
+  getIt.registerLazySingleton<SessionRemoteDataSource>(
+      () => SessionRemoteDataSourceImpl(getIt<Dio>()));
+  getIt.registerLazySingleton<SessionRepository>(
+      () => SessionRepositoryImpl(getIt<SessionRemoteDataSource>()));
+  getIt.registerLazySingleton(
+      () => GetSessionsUseCase(getIt<SessionRepository>()));
+  getIt.registerFactory(
+      () => SessionBloc(getSessions: getIt<GetSessionsUseCase>()));
+
+  // Peer
+  getIt.registerLazySingleton<PeerRepository>(() => PeerRepositoryImpl());
+  getIt.registerLazySingleton(() => JoinQueueUseCase(getIt<PeerRepository>()));
+  getIt.registerLazySingleton(() => LeaveQueueUseCase(getIt<PeerRepository>()));
+  getIt.registerLazySingleton(
+      () => GetMatchStreamUseCase(getIt<PeerRepository>()));
+  getIt.registerFactory(() => PeerBloc(
+        joinQueueUseCase: getIt<JoinQueueUseCase>(),
+        leaveQueueUseCase: getIt<LeaveQueueUseCase>(),
+        getMatchStreamUseCase: getIt<GetMatchStreamUseCase>(),
+      ));
+
+  // Speaking Coach
+  getIt.registerLazySingleton<SpeakingCoachRemoteDataSource>(
+    () => SpeakingCoachRemoteDataSourceImpl(getIt<Dio>()),
+  );
+  getIt.registerLazySingleton<SpeakingCoachRepository>(
+    () => SpeakingCoachRepositoryImpl(
+      remoteDataSource: getIt<SpeakingCoachRemoteDataSource>(),
+    ),
+  );
+  getIt.registerLazySingleton(
+    () => AnalyzeSpeakingUseCase(getIt<SpeakingCoachRepository>()),
+  );
+  getIt.registerFactory(
+    () => SpeakingCoachBloc(
+      analyzeSpeakingUseCase: getIt<AnalyzeSpeakingUseCase>(),
+    ),
+  );
+
+  // Speaking Partner
+  getIt.registerLazySingleton<SpeakingPartnerRemoteDataSource>(
+    () => SpeakingPartnerRemoteDataSourceImpl(getIt<Dio>()),
+  );
+  getIt.registerLazySingleton<SpeakingPartnerRepository>(
+    () =>
+        SpeakingPartnerRepositoryImpl(getIt<SpeakingPartnerRemoteDataSource>()),
+  );
+  getIt.registerLazySingleton(
+    () => GetScenariosUseCase(getIt<SpeakingPartnerRepository>()),
+  );
+  getIt.registerLazySingleton(
+    () => ProcessTurnUseCase(getIt<SpeakingPartnerRepository>()),
+  );
+  getIt.registerFactory(
+    () => SpeakingPartnerBloc(
+      getScenarios: getIt<GetScenariosUseCase>(),
+      processTurn: getIt<ProcessTurnUseCase>(),
     ),
   );
 }

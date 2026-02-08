@@ -14,6 +14,7 @@ class UserEntity extends Equatable {
   final int speakingLevel;
   final String subscriptionPlan;
   final DateTime? subscriptionExpiry;
+  final String role;
 
   const UserEntity({
     required this.id,
@@ -27,9 +28,24 @@ class UserEntity extends Equatable {
     this.gameLevel = 1,
     this.grammarLevel = 1,
     this.speakingLevel = 1,
+    this.wordMatchLevel = 1,
+    this.typingLevel = 1,
+    this.dictationLevel = 1,
+    this.readingLevel = 1,
+    this.rapidFireLevel = 1,
     this.subscriptionPlan = 'free',
     this.subscriptionExpiry,
+    this.role = 'user',
+    this.lastPracticeDate,
   });
+
+  final DateTime? lastPracticeDate;
+
+  final int wordMatchLevel;
+  final int typingLevel;
+  final int dictationLevel;
+  final int readingLevel;
+  final int rapidFireLevel;
 
   bool get isPremium => subscriptionPlan == 'premium';
 
@@ -46,7 +62,14 @@ class UserEntity extends Equatable {
         gameLevel,
         grammarLevel,
         speakingLevel,
+        wordMatchLevel,
+        typingLevel,
+        dictationLevel,
+        readingLevel,
+        rapidFireLevel,
         subscriptionPlan,
         subscriptionExpiry,
+        role,
+        lastPracticeDate,
       ];
 }

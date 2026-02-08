@@ -49,6 +49,12 @@ class _MatchingPageState extends State<MatchingPage>
     return BlocListener<PeerBloc, PeerState>(
       listener: (context, state) {
         if (state is PeerMatched) {
+          final userState = context.read<UserBloc>().state;
+          String currentUserName = 'User';
+          if (userState is UserLoaded) {
+            currentUserName = userState.user.fullName;
+          }
+
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -57,6 +63,7 @@ class _MatchingPageState extends State<MatchingPage>
                 token: state.token,
                 uid: state.uid,
                 peerName: state.peerName,
+                currentUserName: currentUserName,
               ),
             ),
           );

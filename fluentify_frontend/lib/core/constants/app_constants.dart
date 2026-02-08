@@ -1,7 +1,14 @@
 class AppConstants {
   static const String appName = 'Fluentify';
+  // Toggle this to switch between Localhost and Production
+  static const bool useLocalBackend = true;
+
   static String get apiBaseUrl {
-    return 'https://fluentify-app.vercel.app';
+    if (useLocalBackend) {
+      // Host machine LAN IP for Physical Device
+      return 'http://192.168.1.51:3000';
+    }
+    return 'https://fluentify-app-1bul.vercel.app';
   }
 
   // Storage Keys

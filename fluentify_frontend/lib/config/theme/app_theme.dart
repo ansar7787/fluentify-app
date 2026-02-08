@@ -1,66 +1,86 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluentify/core/theme/app_colors.dart';
 
 class AppTheme {
-  static const Color primaryYellow = Color(0xFFFFCC00);
-  static const Color secondaryGreen = Color(0xFF2ECC71);
-  static const Color accentBlue = Color(0xFF3498DB);
-  static const Color darkBg = Color(0xFF121212);
-  static const Color cardBg = Color(0xFF1E1E1E);
-
-  // Premium Auth Colors
-  static const Color authGradientStart = Color(0xFFFFF9E5); // Very light yellow
-  static const Color authGradientEnd = Color(0xFFFFFFFF);
-  static const Color blobOne = Color(0xFFFFE5B4); // Peach
-  static const Color blobTwo = Color(0xFFE8F5E9); // Light Green
-  static const Color blobThree = Color(0xFFE3F2FD); // Light Blue
+  // Legacy constants for backward compatibility (using new theme values)
+  // Legacy constants for backward compatibility
+  static const Color primaryYellow = AppColors.yellow;
+  static const Color secondaryGreen = AppColors.success;
+  static const Color accentBlue = AppColors.primary;
+  static const Color darkBg = AppColors.darkBackground;
+  static const Color scaffoldBg = AppColors.background;
+  static const Color cardBg = AppColors.surface;
 
   // Light Theme
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      primaryColor: primaryYellow,
+      primaryColor: AppColors.primary,
+      scaffoldBackgroundColor: AppColors.background,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryYellow,
-        primary: primaryYellow,
-        secondary: secondaryGreen,
-        tertiary: accentBlue,
-        surface: const Color(0xFFFFFFFF),
+        seedColor: AppColors.primary,
+        primary: AppColors.primary,
+        secondary: AppColors.secondary,
+        tertiary: AppColors.accent,
+        surface: AppColors.surface,
       ),
-      scaffoldBackgroundColor: const Color(0xFFFFFFFF),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Color(0xFF1A1A1A),
+      appBarTheme: AppBarTheme(
+        backgroundColor: AppColors.background,
+        foregroundColor: AppColors.textHeadline,
         elevation: 0,
         centerTitle: true,
+        titleTextStyle: TextStyle(
+          fontSize: 18.sp,
+          fontWeight: FontWeight.bold,
+          color: AppColors.textHeadline,
+        ),
       ),
-      textTheme: const TextTheme(
+      textTheme: TextTheme(
         headlineLarge: TextStyle(
-          fontSize: 32,
+          fontSize: 32.sp,
           fontWeight: FontWeight.w800,
-          color: Color(0xFF1A1A1A),
+          color: AppColors.textHeadline,
           letterSpacing: -0.5,
         ),
         headlineMedium: TextStyle(
-          fontSize: 24,
+          fontSize: 24.sp,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF1A1A1A),
+          color: AppColors.textHeadline,
+        ),
+        titleLarge: TextStyle(
+          fontSize: 20.sp,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textHeadline,
         ),
         bodyLarge: TextStyle(
-          fontSize: 16,
-          color: Color(0xFF333333),
+          fontSize: 16.sp,
+          color: AppColors.textBody,
           height: 1.5,
+        ),
+        bodyMedium: TextStyle(
+          fontSize: 14.sp,
+          color: AppColors.textSecondary,
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: primaryYellow,
-          foregroundColor: Colors.black,
-          minimumSize: const Size(double.infinity, 56),
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          minimumSize: Size(double.infinity, 56.h),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(16.r),
           ),
           elevation: 0,
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: AppColors.surface,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+          side: BorderSide(color: Colors.grey.withValues(alpha: 0.1), width: 1),
         ),
       ),
     );
@@ -71,22 +91,66 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      primaryColor: primaryYellow,
-      scaffoldBackgroundColor: darkBg,
+      primaryColor: AppColors.primary,
+      scaffoldBackgroundColor: AppColors.darkBackground,
       colorScheme: ColorScheme.fromSeed(
         brightness: Brightness.dark,
-        seedColor: primaryYellow,
-        primary: primaryYellow,
-        secondary: secondaryGreen,
-        tertiary: accentBlue,
-        surface: darkBg,
+        seedColor: AppColors.primary,
+        primary: AppColors.primary,
+        secondary: AppColors.secondary,
+        tertiary: AppColors.accent,
+        surface: AppColors.darkSurface,
       ),
-      cardColor: cardBg,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
+      appBarTheme: AppBarTheme(
+        backgroundColor: AppColors.darkBackground,
+        foregroundColor: AppColors.darkTextHeadline,
         elevation: 0,
         centerTitle: true,
+        titleTextStyle: TextStyle(
+          fontSize: 18.sp,
+          fontWeight: FontWeight.bold,
+          color: AppColors.darkTextHeadline,
+        ),
+      ),
+      textTheme: TextTheme(
+        headlineLarge: TextStyle(
+          fontSize: 32.sp,
+          fontWeight: FontWeight.w800,
+          color: AppColors.darkTextHeadline,
+          letterSpacing: -0.5,
+        ),
+        headlineMedium: TextStyle(
+          fontSize: 24.sp,
+          fontWeight: FontWeight.w700,
+          color: AppColors.darkTextHeadline,
+        ),
+        bodyLarge: TextStyle(
+          fontSize: 16.sp,
+          color: AppColors.darkTextBody,
+          height: 1.5,
+        ),
+        bodyMedium: TextStyle(
+          fontSize: 14.sp,
+          color: AppColors.textSecondary,
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          minimumSize: Size(double.infinity, 56.h),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+          elevation: 0,
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: AppColors.darkSurface,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import 'dart:ui';
 import '../../../../config/theme/app_theme.dart';
+import '../../../../core/theme/app_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/di/service_locator.dart';
 import '../../../../features/user/domain/repositories/user_repository.dart';
@@ -83,7 +84,9 @@ class _GamePageState extends State<GamePage> {
   }
 
   void _selectWord(String word) {
-    if (_isCorrect == true) return;
+    if (_isCorrect == true) {
+      return;
+    }
     setState(() {
       _shuffledWords.remove(word);
       _selectedWords.add(word);
@@ -91,7 +94,9 @@ class _GamePageState extends State<GamePage> {
   }
 
   void _unselectWord(String word) {
-    if (_isCorrect == true) return;
+    if (_isCorrect == true) {
+      return;
+    }
     setState(() {
       _selectedWords.remove(word);
       _shuffledWords.add(word);
@@ -138,6 +143,35 @@ class _GamePageState extends State<GamePage> {
     }
   }
 
+  void _useHint() {
+    if (_coins < 5 || _shuffledWords.isEmpty || _isCorrect == true) {
+      return;
+    }
+
+    final challenge = widget.level.challenges[_currentChallengeIndex];
+    final correctWords = challenge.correctSentence.split(' ');
+
+    // Find the next correct word to place
+    int nextWordIndex = _selectedWords.length;
+    if (nextWordIndex < correctWords.length) {
+      String hintWord = correctWords[nextWordIndex];
+
+      // Find this word in shuffled list
+      String? foundWord;
+      try {
+        foundWord = _shuffledWords
+            .firstWhere((w) => w.toLowerCase() == hintWord.toLowerCase());
+      } catch (e) {
+        // Fallback if not found exactly
+      }
+
+      if (foundWord != null) {
+        _addCoins(-5);
+        _selectWord(foundWord);
+      }
+    }
+  }
+
   void _nextChallenge() {
     if (_currentChallengeIndex < widget.level.challenges.length - 1) {
       setState(() {
@@ -157,47 +191,58 @@ class _GamePageState extends State<GamePage> {
       context: context,
       barrierDismissible: false,
       builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
         child: Dialog(
           backgroundColor: Colors.transparent,
           insetPadding: EdgeInsets.all(20.w),
           child: Container(
-            padding: EdgeInsets.all(24.w),
+            padding: EdgeInsets.all(32.w),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(30.r),
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.white.withValues(alpha: 0.2),
+                  Colors.white.withValues(alpha: 0.05),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(40.r),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 30,
+                  offset: const Offset(0, 10),
+                )
+              ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.emoji_events_rounded,
-                        color: AppTheme.primaryYellow, size: 80.w)
-                    .animate()
-                    .scale(duration: 600.ms, curve: Curves.elasticOut),
-                SizedBox(height: 20.h),
-                Text('Level Complete!',
+                Container(
+                  padding: EdgeInsets.all(20.w),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryYellow.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.emoji_events_rounded,
+                          color: AppTheme.primaryYellow, size: 60.w)
+                      .animate()
+                      .scale(duration: 600.ms, curve: Curves.elasticOut)
+                      .shimmer(delay: 800.ms),
+                ),
+                SizedBox(height: 24.h),
+                Text('Awesome Work!',
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 28.sp,
                         fontWeight: FontWeight.bold)),
-                SizedBox(height: 10.h),
-                Text('You unlocked the next level!',
+                SizedBox(height: 12.h),
+                Text('Level completed successfully!',
                     style: TextStyle(color: Colors.white70, fontSize: 16.sp)),
-                SizedBox(height: 30.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                SizedBox(height: 40.h),
+                Column(
                   children: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        Navigator.pop(context);
-                      },
-                      child: Text('Levels',
-                          style:
-                              TextStyle(color: Colors.white, fontSize: 16.sp)),
-                    ),
-                    SizedBox(width: 20.w),
                     ElevatedButton(
                       onPressed: () {
                         Navigator.pop(context);
@@ -206,13 +251,24 @@ class _GamePageState extends State<GamePage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryYellow,
                         foregroundColor: Colors.black,
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 24.w, vertical: 12.h),
-                        minimumSize: Size(120.w, 48.h),
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                        minimumSize: Size(double.infinity, 56.h),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15.r)),
+                            borderRadius: BorderRadius.circular(20.r)),
+                        elevation: 0,
                       ),
-                      child: const Text('Next Level'),
+                      child: const Text('Continue to Next Level',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                    SizedBox(height: 12.h),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                      },
+                      child: Text('Back to Levels',
+                          style: TextStyle(
+                              color: Colors.white60, fontSize: 16.sp)),
                     ),
                   ],
                 ),
@@ -347,7 +403,7 @@ class _GamePageState extends State<GamePage> {
                                     boxShadow: [
                                       BoxShadow(
                                         color: AppTheme.primaryYellow
-                                            .withOpacity(0.4),
+                                            .withValues(alpha: 0.4),
                                         blurRadius: 8,
                                         offset: const Offset(0, 2),
                                       )
@@ -361,16 +417,52 @@ class _GamePageState extends State<GamePage> {
                             isDark: isDark,
                             child: Column(
                               children: [
-                                Container(
-                                  padding: EdgeInsets.all(12.w),
-                                  decoration: BoxDecoration(
-                                    color:
-                                        AppTheme.primaryYellow.withOpacity(0.2),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(Icons.lightbulb_rounded,
-                                      color: AppTheme.primaryYellow,
-                                      size: 28.w),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(10.w),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.primaryYellow
+                                            .withValues(alpha: 0.1),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(Icons.lightbulb_rounded,
+                                          color: AppTheme.primaryYellow,
+                                          size: 24.w),
+                                    ),
+                                    GestureDetector(
+                                      onTap: _useHint,
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 12.w, vertical: 6.h),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.primary
+                                              .withValues(alpha: 0.1),
+                                          borderRadius:
+                                              BorderRadius.circular(12.r),
+                                          border: Border.all(
+                                              color: AppColors.primary
+                                                  .withValues(alpha: 0.2)),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.auto_awesome,
+                                                color: AppColors.primary,
+                                                size: 14.w),
+                                            SizedBox(width: 4.w),
+                                            Text('Hint (5)',
+                                                style: TextStyle(
+                                                    color: AppColors.primary,
+                                                    fontSize: 12.sp,
+                                                    fontWeight:
+                                                        FontWeight.bold)),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 SizedBox(height: 16.h),
                                 Text(
@@ -395,14 +487,15 @@ class _GamePageState extends State<GamePage> {
                             padding: EdgeInsets.all(20.w),
                             decoration: BoxDecoration(
                                 color: isDark
-                                    ? const Color(0xFF0F172A).withOpacity(0.5)
-                                    : Colors.white.withOpacity(0.6),
+                                    ? AppColors.darkSurface
+                                        .withValues(alpha: 0.6)
+                                    : Colors.white.withValues(alpha: 0.6),
                                 borderRadius: BorderRadius.circular(24.r),
                                 border: Border.all(
                                   color: _isCorrect == true
-                                      ? Colors.greenAccent
+                                      ? AppColors.success
                                       : (_isCorrect == false
-                                          ? Colors.redAccent
+                                          ? AppColors.error
                                           : (isDark
                                               ? Colors.white10
                                               : Colors.black12)),
@@ -410,7 +503,7 @@ class _GamePageState extends State<GamePage> {
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
+                                    color: Colors.black.withValues(alpha: 0.1),
                                     blurRadius: 10,
                                     offset: const Offset(0, 4),
                                   )
@@ -428,8 +521,8 @@ class _GamePageState extends State<GamePage> {
                                     ),
                                   )
                                 : Wrap(
-                                    spacing: 10.w,
-                                    runSpacing: 10.h,
+                                    spacing: 12.w,
+                                    runSpacing: 12.h,
                                     crossAxisAlignment:
                                         WrapCrossAlignment.center,
                                     alignment: WrapAlignment.center,
@@ -437,11 +530,11 @@ class _GamePageState extends State<GamePage> {
                                       return _buildWordChip(
                                         word: word,
                                         onTap: () => _unselectWord(word),
-                                        color: AppTheme.accentBlue,
+                                        color: AppColors.primary,
                                         textColor: Colors.white,
-                                        elevation: 4,
+                                        elevation: 6,
                                       ).animate().scale(
-                                          duration: 200.ms,
+                                          duration: 300.ms,
                                           curve: Curves.easeOutBack);
                                     }).toList(),
                                   ),
@@ -456,7 +549,7 @@ class _GamePageState extends State<GamePage> {
                                 word: word,
                                 onTap: () => _selectWord(word),
                                 color: isDark
-                                    ? Colors.white.withOpacity(0.1)
+                                    ? Colors.white.withValues(alpha: 0.1)
                                     : Colors.white,
                                 textColor:
                                     isDark ? Colors.white : Colors.black87,
@@ -501,8 +594,8 @@ class _GamePageState extends State<GamePage> {
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
               decoration: BoxDecoration(
                 color: isDark
-                    ? Colors.white.withOpacity(0.1)
-                    : Colors.white.withOpacity(0.8),
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.white.withValues(alpha: 0.8),
                 borderRadius: BorderRadius.circular(14.r),
                 border:
                     Border.all(color: isDark ? Colors.white12 : Colors.black12),
@@ -534,7 +627,7 @@ class _GamePageState extends State<GamePage> {
                     color: AppTheme.primaryYellow,
                     shadows: [
                       Shadow(
-                          color: AppTheme.primaryYellow.withOpacity(0.5),
+                          color: AppTheme.primaryYellow.withValues(alpha: 0.5),
                           blurRadius: 5)
                     ]),
               )
@@ -543,10 +636,10 @@ class _GamePageState extends State<GamePage> {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
             decoration: BoxDecoration(
-              color: AppTheme.primaryYellow.withOpacity(0.2),
+              color: AppTheme.primaryYellow.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20.r),
-              border:
-                  Border.all(color: AppTheme.primaryYellow.withOpacity(0.5)),
+              border: Border.all(
+                  color: AppTheme.primaryYellow.withValues(alpha: 0.5)),
             ),
             child: Row(
               children: [
@@ -576,7 +669,7 @@ class _GamePageState extends State<GamePage> {
           backgroundColor: AppTheme.secondaryGreen,
           foregroundColor: Colors.white,
           elevation: 8,
-          shadowColor: AppTheme.secondaryGreen.withOpacity(0.5),
+          shadowColor: AppTheme.secondaryGreen.withValues(alpha: 0.5),
           padding: EdgeInsets.symmetric(vertical: 16.h),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
@@ -600,7 +693,7 @@ class _GamePageState extends State<GamePage> {
               isEnabled ? AppTheme.primaryYellow : Colors.grey[400],
           foregroundColor: Colors.black,
           elevation: isEnabled ? 4 : 0,
-          shadowColor: AppTheme.primaryYellow.withOpacity(0.4),
+          shadowColor: AppTheme.primaryYellow.withValues(alpha: 0.4),
           padding: EdgeInsets.symmetric(vertical: 16.h),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
@@ -630,13 +723,13 @@ class _GamePageState extends State<GamePage> {
           boxShadow: elevation > 0
               ? [
                   BoxShadow(
-                      color: color.withOpacity(0.4),
+                      color: color.withValues(alpha: 0.4),
                       offset: const Offset(0, 4),
                       blurRadius: 8)
                 ]
               : [
                   BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       offset: const Offset(0, 2),
                       blurRadius: 2)
                 ],
@@ -659,20 +752,20 @@ class _GamePageState extends State<GamePage> {
           width: double.infinity,
           decoration: BoxDecoration(
               color: isDark
-                  ? Colors.white.withOpacity(0.05)
-                  : Colors.white.withOpacity(0.6),
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.white.withValues(alpha: 0.6),
               borderRadius: BorderRadius.circular(24.r),
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
               gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
                     isDark
-                        ? Colors.white.withOpacity(0.05)
-                        : Colors.white.withOpacity(0.4),
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.white.withValues(alpha: 0.4),
                     isDark
-                        ? Colors.white.withOpacity(0.02)
-                        : Colors.white.withOpacity(0.1),
+                        ? Colors.white.withValues(alpha: 0.02)
+                        : Colors.white.withValues(alpha: 0.1),
                   ])),
           child: Padding(
             padding: EdgeInsets.all(20.w),
@@ -694,10 +787,12 @@ class _GamePageState extends State<GamePage> {
             height: 300.h,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppTheme.primaryYellow.withOpacity(isDark ? 0.08 : 0.05),
+              color: AppTheme.primaryYellow
+                  .withValues(alpha: isDark ? 0.08 : 0.05),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.primaryYellow.withOpacity(isDark ? 0.2 : 0.1),
+                  color: AppTheme.primaryYellow
+                      .withValues(alpha: isDark ? 0.2 : 0.1),
                   blurRadius: 50,
                   spreadRadius: 20,
                 )
@@ -715,10 +810,12 @@ class _GamePageState extends State<GamePage> {
             height: 400.h,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppTheme.accentBlue.withOpacity(isDark ? 0.08 : 0.05),
+              color:
+                  AppTheme.accentBlue.withValues(alpha: isDark ? 0.08 : 0.05),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.accentBlue.withOpacity(isDark ? 0.2 : 0.1),
+                  color:
+                      AppTheme.accentBlue.withValues(alpha: isDark ? 0.2 : 0.1),
                   blurRadius: 60,
                   spreadRadius: 20,
                 )
@@ -732,7 +829,7 @@ class _GamePageState extends State<GamePage> {
           top: 80.h,
           left: 40.w,
           child: Icon(Icons.star_rounded,
-                  color: Colors.white.withOpacity(isDark ? 0.05 : 0.1),
+                  color: Colors.white.withValues(alpha: isDark ? 0.05 : 0.1),
                   size: 40)
               .animate(onPlay: (controller) => controller.repeat(reverse: true))
               .scale(begin: const Offset(1, 1), end: const Offset(1.5, 1.5)),
